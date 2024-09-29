@@ -1,0 +1,25 @@
+import os
+import subprocess
+
+# Directory containing fast5 files
+input_directory = "./squigulator/fast5/Acinetobacter_pittii_16-377-0801_fast5s/"
+output_directory = "./squigulator/slow5/Acinetobacter_pittii_16-377-0801_slow5s/"
+
+# Ensure the output directory exists
+os.makedirs(output_directory, exist_ok=True)
+
+# Loop through each file in the input directory
+for filename in os.listdir(input_directory):
+    if filename.endswith(".fast5"):
+        input_file = os.path.join(input_directory, filename)
+        output_file = os.path.join(output_directory, filename.replace(".fast5", ".slow5"))
+
+        # Command to convert fast5 to slow5
+        command = ["./slow5tools-v1.2.0/slow5tools", "f2s", input_file, "-o", output_file]
+
+        # Run the conversion command
+        try:
+            subprocess.run(command, check=True)
+            print(f"Successfully converted {filename} to slow5.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error converting {filename}: {e}")

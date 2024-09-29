@@ -1,0 +1,6 @@
+libhdf5-dev
+zlib1g-dev
+libzstd1-dev
+git
+autoconf
+g++
