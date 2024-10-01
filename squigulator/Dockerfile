@@ -10,7 +10,6 @@ WORKDIR /app
 # You can skip this if you don't have dependencies yet
 COPY . /app
 RUN pip install -r requirements.txt
-RUN mkdir /app/squigulator
 SHELL ["/bin/bash", "-c"]
 # Keep the container running, allowing you to connect and develop
 CMD ["bash"]

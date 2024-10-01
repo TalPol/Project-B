@@ -1,6 +1,20 @@
+update
+wget
 libhdf5-dev
 zlib1g-dev
-libzstd1-dev
+libzstd1-dev # maybe without dev
 git
 autoconf
 g++
+minimap2
+https://github.com/attractivechaos/k8/releases/download/v1.2/k8-1.2.tar.bz2 # k8-1.2 changed the dir name to k8 and moved it to /usr/local/bin/k8
+https://github.com/hiruna72/squigualiser/releases/download/squigualiser-v0.6.1/squigualiser-v0.6.1-linux-x86-64-binaries.tar.gz -O squigualiser.tar.gz
+nodejs npm
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+sudo apt-get install iptables
+sudo apt-get install procps
