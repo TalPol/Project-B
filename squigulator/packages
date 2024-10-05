@@ -3,6 +3,10 @@ wget
 libhdf5-dev
 zlib1g-dev
 libzstd1-dev # maybe without dev
+libzstd-dev
+libncurses5-dev
+libbz2-dev
+liblzma-dev
 git
 autoconf
 g++
@@ -18,3 +22,6 @@ curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-
 sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
 sudo apt-get install iptables
 sudo apt-get install procps
+https://docs.docker.com/engine/install/ubuntu/
+sudo install k8/k8-x86_64-Linux /usr/local/bin/k8
+pip install ont-pyguppy-client-lib==6.3.8
