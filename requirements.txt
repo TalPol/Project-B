@@ -2,4 +2,6 @@
 einops
 transformers
 setuptools
+ont-bonito
 mamba-ssm
+causal-conv1d

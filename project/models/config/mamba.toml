@@ -1,0 +1,15 @@
+[model]
+package = "models.mamba.model"
+
+[labels]
+labels = ["N", "A", "C", "G", "T"]
+
+[input]
+features = 1
+
+# C1
+[[block]]
+dim = 1024
+state = 64
+conv = 4
+expand = 2
