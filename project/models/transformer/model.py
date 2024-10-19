@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 
 import torch
 import torch.nn.functional as F
-from torch import nn
 try:
     from flash_attn import flash_attn_qkvpacked_func
     from flash_attn.layers.rotary import RotaryEmbedding
@@ -21,9 +20,6 @@ except ImportError:
 from bonito.crf.model import SeqdistModel
 from bonito.nn import from_dict, register, LinearCRFEncoder, MakeContiguous, Module, Permute, Serial
 
-import mamba_ssm
-from mamba_ssm import Mamba2
-from mamba_ssm.modules.mha import MHA
 
 def deepnorm_params(depth):
     """
@@ -41,8 +37,8 @@ def sliding_window_mask(seq_len, window, device):
     band = band * torch.tril(band, diagonal=window[1])
     band = band.to(torch.bool).to(device)
     return band
-'''
-@register
+
+
 class MultiHeadAttention(Module):
     def __init__(self, d_model, nhead, qkv_bias=False, out_bias=True, rotary_dim=None, attn_window=None):
         super().__init__()
@@ -73,100 +69,19 @@ class MultiHeadAttention(Module):
         N, T, _ = x.shape
         print("\n \n \n \n", x.shape)
         qkv = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
-
+        print("\n \n \n \n", qkv.shape)
         qkv = self.rotary_emb(qkv)
-
+        print("\n \n \n \n", qkv.shape)
         attn_output = self.attn_func(qkv).reshape(N, T, self.d_model)
 
         out = self.out_proj(attn_output)
 
         return out
 
-'''
 
-'''
-[model.encoder.MHA]
-type = "multiheadattention"
-d_model = 512
-nhead = 8
-'''
 @register
-class MultiHeadAttention(Module):
-    def __init__(self, d_model, nhead, rotary_dim=None):
-        super().__init__()
-        assert d_model % nhead == 0, "d_model must be divisible by nhead"
-
-        self.d_model = d_model
-        self.nhead = nhead
-        self.head_dim = d_model // nhead
-        self.rotary_dim = self.head_dim if rotary_dim is None else rotary_dim
-        self.Wqkv = torch.nn.Linear(d_model, 3 * d_model) #
-        self.MHA = MHA(embed_dim=d_model, num_heads=nhead, head_dim=self.head_dim, rotary_emb_dim=self.rotary_dim)
-        self.out_proj = nn.Identity()
-    def forward(self, x):
-        N, T, _ = x.shape
-        print("\n \n \n \n", x.shape)
-        x = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
-        print("\n \n \n \n", x.shape)
-        x = self.MHA(x)
-        print("\n \n \n \n", x.shape)
-        out = self.out_proj(x)
-        return out
-
-
-
-#removed qkv_bias=False, , out_bias=True, rotary_dim=None and wkqv ouptut layer and emds
-@register
-class MambaBlock(Module):
-    def __init__(self, d_model, nhead, d_state, headdim, d_conv, chunk_size):
-        super().__init__()
-        assert d_model % nhead == 0, "d_model must be divisible by nhead"
-
-        self.d_model = d_model
-        self.nhead = nhead
-        self.head_dim = d_model // nhead
-        #self.rotary_dim = self.head_dim if rotary_dim is None else rotary_dim
-
-        #self.Wqkv = torch.nn.Linear(d_model, 3 * d_model, bias=qkv_bias)
-        #self.out_proj = torch.nn.Linear(d_model, d_model, bias=out_bias)
-
-        #self.rotary_emb = RotaryEmbedding(self.rotary_dim, interleaved=False)
-        #self.attn_window = (-1, -1) if attn_window is None else tuple(attn_window)
-        self.mamba = Mamba2(
-            d_model=d_model,
-            d_state=d_state,
-            headdim=headdim,
-            d_conv=d_conv,
-            chunk_size=chunk_size,
-            )
-
-    def forward(self, x):
-            N, T, _ = x.shape
-            #print("\n \n \n \n", x.shape)
-            #qkv = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
-            #print("\n \n \n \n", qkv.shape)
-            #qkv = self.rotary_emb(x.view(N, T, 3, self.nhead, self.head_dim))
-
-            out = self.mamba(x)
-
-            #out = self.out_proj(mamba_output)
-
-            return out
-'''
-    def attn_func(self, qkv):
-        if torch.cuda.get_device_capability(qkv.device)[0] >= 8 and (torch.is_autocast_enabled() or qkv.dtype == torch.half):
-            attn_output = flash_attn_qkvpacked_func(qkv, window_size=self.attn_window)
-        else:
-            q, k, v = torch.chunk(qkv.permute(0, 2, 3, 1, 4), chunks=3, dim=1)
-            mask = sliding_window_mask(qkv.shape[1], self.attn_window, q.device)
-            attn_output = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
-            attn_output = attn_output.permute(0, 1, 3, 2, 4)
-        return attn_output
-'''
-# qkv_bias=False,
-@register
-class MambaLayer(Module):
-    def __init__(self, d_model, nhead, dim_feedforward, deepnorm_alpha, deepnorm_beta,chunk_size, d_state=128, headdim=64, d_conv=4):
+class TransformerEncoderLayer(Module):
+    def __init__(self, d_model, nhead, dim_feedforward, deepnorm_alpha, deepnorm_beta, attn_window=None):
         super().__init__()
         self.kwargs = {
             "d_model": d_model,
@@ -174,21 +89,15 @@ class MambaLayer(Module):
             "dim_feedforward": dim_feedforward,
             "deepnorm_alpha": deepnorm_alpha,
             "deepnorm_beta": deepnorm_beta,
-            "d_state": d_state,
-            "headdim": headdim,
-            "d_conv": d_conv,
+            "attn_window": attn_window
         }
-        self.self_attn = MultiHeadAttention(d_model=d_model, nhead=nhead)
-        # maybe switch to nn.embedding?
-        # added an MHA
-        self.mamba = MambaBlock(
+
+        self.self_attn = MultiHeadAttention(
             d_model=d_model,
             nhead=nhead,
-            d_state=d_state,
-            headdim=headdim,
-            d_conv=d_conv,
-            chunk_size=chunk_size,
-            #out_bias=True,            
+            qkv_bias=False,
+            out_bias=True,
+            attn_window=attn_window
         )
         self.ff = GatedMlp(
             d_model,
@@ -209,12 +118,12 @@ class MambaLayer(Module):
         d_model = self.kwargs["d_model"]
         torch.nn.init.xavier_normal_(self.ff.fc1.weight, gain=db)
         torch.nn.init.xavier_normal_(self.ff.fc2.weight, gain=db)
-        #torch.nn.init.xavier_normal_(self.mamba.out_proj.weight, gain=db)
+        torch.nn.init.xavier_normal_(self.self_attn.out_proj.weight, gain=db)
         torch.nn.init.xavier_normal_(self.self_attn.Wqkv.weight[2*d_model:], gain=db)
         torch.nn.init.xavier_normal_(self.self_attn.Wqkv.weight[:2*d_model], gain=1)
 
     def forward(self, x):
-        x = self.norm1(self.mamba(x), self.deepnorm_alpha*x)
+        x = self.norm1(self.self_attn(x), self.deepnorm_alpha*x)
         x = self.norm2(self.ff(x), self.deepnorm_alpha*x)
         return x
 

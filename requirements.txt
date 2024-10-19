@@ -5,3 +5,4 @@ setuptools
 ont-bonito
 mamba-ssm
 causal-conv1d
+flash-attn --no-build-isolation # added later and didn't test
