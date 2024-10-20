@@ -67,11 +67,11 @@ class MultiHeadAttention(Module):
 
     def forward(self, x):
         N, T, _ = x.shape
-        print("\n \n \n \n", x.shape)
+        #print("\n \n \n \n", x.shape)
         qkv = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
-        print("\n \n \n \n", qkv.shape)
+        #print("\n \n \n \n", qkv.shape)
         qkv = self.rotary_emb(qkv)
-        print("\n \n \n \n", qkv.shape)
+        #print("\n \n \n \n", qkv.shape)
         attn_output = self.attn_func(qkv).reshape(N, T, self.d_model)
 
         out = self.out_proj(attn_output)

@@ -1,6 +1,6 @@
 import logging
 import types
-from functools import lru_cache
+from functools import lru_cache, partial
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ from bonito.nn import from_dict, register, LinearCRFEncoder, MakeContiguous, Mod
 import mamba_ssm
 from mamba_ssm import Mamba2
 from mamba_ssm.modules.mha import MHA
+from mamba_ssm.modules.block import Block
 
 def deepnorm_params(depth):
     """
@@ -71,7 +72,7 @@ class MultiHeadAttention(Module):
 
     def forward(self, x):
         N, T, _ = x.shape
-        print("\n \n \n \n", x.shape)
+        #print("\n \n \n \n", x.shape)
         qkv = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
 
         qkv = self.rotary_emb(qkv)
@@ -81,14 +82,15 @@ class MultiHeadAttention(Module):
         out = self.out_proj(attn_output)
 
         return out
-
 '''
+
 
 '''
 [model.encoder.MHA]
 type = "multiheadattention"
 d_model = 512
 nhead = 8
+'''
 '''
 @register
 class MultiHeadAttention(Module):
@@ -100,19 +102,52 @@ class MultiHeadAttention(Module):
         self.nhead = nhead
         self.head_dim = d_model // nhead
         self.rotary_dim = self.head_dim if rotary_dim is None else rotary_dim
-        self.Wqkv = torch.nn.Linear(d_model, 3 * d_model) #
+        #self.Wqkv = torch.nn.Linear(d_model, 3 * d_model) #
         self.MHA = MHA(embed_dim=d_model, num_heads=nhead, head_dim=self.head_dim, rotary_emb_dim=self.rotary_dim)
         self.out_proj = nn.Identity()
     def forward(self, x):
         N, T, _ = x.shape
-        print("\n \n \n \n", x.shape)
-        x = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
-        print("\n \n \n \n", x.shape)
+        #print("\n \n \n \n", x.shape)
+        #x = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
+        #print("\n \n \n \n", x.shape)
         x = self.MHA(x)
-        print("\n \n \n \n", x.shape)
-        out = self.out_proj(x)
-        return out
+        #print("\n \n \n \n", x.shape)
+        #out = self.out_proj(x)
+        return x
+'''
 
+@register
+class MultiHeadAttention(Module):
+    def __init__(self, d_model, nhead, rotary_dim=None):
+        #factory_kwargs = {"device": device, "dtype": dtype}
+        super().__init__()
+        assert d_model % nhead == 0, "d_model must be divisible by nhead"
+
+        self.d_model = d_model
+        self.nhead = nhead
+        self.head_dim = d_model // nhead
+        self.rotary_dim = self.head_dim if rotary_dim is None else rotary_dim
+        #self.Wqkv = torch.nn.Linear(d_model, 3 * d_model) #
+        mixer_cls = partial(MHA, num_heads=nhead, head_dim=self.head_dim)
+        mlp_cls = nn.Identity
+        norm_cls = partial(RMSNorm)
+        self.block = Block(
+            d_model,
+            mixer_cls,
+            mlp_cls,
+            norm_cls,
+        )
+        self.norm_f = RMSNorm(
+            d_model, eps= 1e-5
+        )
+
+    def forward(self, x):
+        #N, T, _ = x.shape
+        #print("\n \n \n \n", x.shape)
+        hidden_states, residual = self.block(x)
+        residual = (hidden_states + residual) if residual is not None else hidden_states
+        hidden_states = self.norm_f(residual.to(dtype=self.norm_f.weight.dtype))
+        return hidden_states
 
 
 #removed qkv_bias=False, , out_bias=True, rotary_dim=None and wkqv ouptut layer and emds
@@ -141,28 +176,19 @@ class MambaBlock(Module):
             )
 
     def forward(self, x):
-            N, T, _ = x.shape
+            #N, T, _ = x.shape
             #print("\n \n \n \n", x.shape)
             #qkv = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
             #print("\n \n \n \n", qkv.shape)
             #qkv = self.rotary_emb(x.view(N, T, 3, self.nhead, self.head_dim))
-
+            if isinstance(x, tuple):
+                x = torch.cat(x, dim=-1)
             out = self.mamba(x)
 
             #out = self.out_proj(mamba_output)
 
             return out
-'''
-    def attn_func(self, qkv):
-        if torch.cuda.get_device_capability(qkv.device)[0] >= 8 and (torch.is_autocast_enabled() or qkv.dtype == torch.half):
-            attn_output = flash_attn_qkvpacked_func(qkv, window_size=self.attn_window)
-        else:
-            q, k, v = torch.chunk(qkv.permute(0, 2, 3, 1, 4), chunks=3, dim=1)
-            mask = sliding_window_mask(qkv.shape[1], self.attn_window, q.device)
-            attn_output = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
-            attn_output = attn_output.permute(0, 1, 3, 2, 4)
-        return attn_output
-'''
+    
 # qkv_bias=False,
 @register
 class MambaLayer(Module):
@@ -210,10 +236,13 @@ class MambaLayer(Module):
         torch.nn.init.xavier_normal_(self.ff.fc1.weight, gain=db)
         torch.nn.init.xavier_normal_(self.ff.fc2.weight, gain=db)
         #torch.nn.init.xavier_normal_(self.mamba.out_proj.weight, gain=db)
-        torch.nn.init.xavier_normal_(self.self_attn.Wqkv.weight[2*d_model:], gain=db)
-        torch.nn.init.xavier_normal_(self.self_attn.Wqkv.weight[:2*d_model], gain=1)
+        #torch.nn.init.xavier_normal_(self.self_attn.Wqkv.weight, gain=db)
+        #torch.nn.init.xavier_normal_(self.self_attn.Wqkv.weight[:2*d_model], gain=1)
 
     def forward(self, x):
+        #print("\n \n \n \n", x.shape)
+        x = self.self_attn(x)
+        #print("\n \n \n \n", x.shape)
         x = self.norm1(self.mamba(x), self.deepnorm_alpha*x)
         x = self.norm2(self.ff(x), self.deepnorm_alpha*x)
         return x

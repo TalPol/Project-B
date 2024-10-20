@@ -102,7 +102,7 @@ d_conv = 2
 chunk_size = 256
 dim_feedforward = 2048
 deepnorm_alpha = 2.4494897
-deepnorm_beta = 0.2886751
+deepnorm_beta = 0.9
 
 [scaling]
 strategy = "pa"
