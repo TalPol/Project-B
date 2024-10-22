@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 import torch
 import torch.nn.functional as F
-from torch import nn
+import torch.nn as nn
 try:
     from flash_attn import flash_attn_qkvpacked_func
     from flash_attn.layers.rotary import RotaryEmbedding
@@ -192,11 +192,12 @@ class MambaBlock(Module):
 # qkv_bias=False,
 @register
 class MambaLayer(Module):
-    def __init__(self, d_model, nhead, dim_feedforward, deepnorm_alpha, deepnorm_beta,chunk_size, d_state=128, headdim=64, d_conv=4):
+    def __init__(self, d_model, nhead, nlayer, dim_feedforward, deepnorm_alpha, deepnorm_beta,chunk_size, d_state=128, headdim=64, d_conv=4):
         super().__init__()
         self.kwargs = {
             "d_model": d_model,
             "nhead": nhead,
+            "nlayer": nlayer,
             "dim_feedforward": dim_feedforward,
             "deepnorm_alpha": deepnorm_alpha,
             "deepnorm_beta": deepnorm_beta,
@@ -207,14 +208,20 @@ class MambaLayer(Module):
         self.self_attn = MultiHeadAttention(d_model=d_model, nhead=nhead)
         # maybe switch to nn.embedding?
         # added an MHA
-        self.mamba = MambaBlock(
-            d_model=d_model,
-            nhead=nhead,
-            d_state=d_state,
-            headdim=headdim,
-            d_conv=d_conv,
-            chunk_size=chunk_size,
-            #out_bias=True,            
+
+        self.mamba = nn.ModuleList(
+            [
+                MambaBlock(
+                    d_model=d_model,
+                    nhead=nhead,
+                    d_state=d_state,
+                    headdim=headdim,
+                    d_conv=d_conv,
+                    chunk_size=chunk_size,
+                    #out_bias=True,            
+                )
+            for i in range(nlayer)
+            ]
         )
         self.ff = GatedMlp(
             d_model,
@@ -224,8 +231,9 @@ class MambaLayer(Module):
             bias2=False,
             multiple_of=1,
         )
-        self.norm1 = RMSNorm(d_model)
-        self.norm2 = RMSNorm(d_model)
+        #self.norm1 = RMSNorm(d_model)
+        #self.norm2 = RMSNorm(d_model)
+        self.norm = RMSNorm(d_model)
 
         self.register_buffer("deepnorm_alpha", torch.tensor(deepnorm_alpha))
         self.reset_parameters()
@@ -243,8 +251,11 @@ class MambaLayer(Module):
         #print("\n \n \n \n", x.shape)
         x = self.self_attn(x)
         #print("\n \n \n \n", x.shape)
-        x = self.norm1(self.mamba(x), self.deepnorm_alpha*x)
-        x = self.norm2(self.ff(x), self.deepnorm_alpha*x)
+        #x = self.norm1(self.mamba(x), self.deepnorm_alpha*x)
+        for layer in self.mamba:
+            x = layer(x)
+
+        x = self.norm(self.ff(x), self.deepnorm_alpha*x)
         return x
 
     def to_dict(self, include_weights=False):

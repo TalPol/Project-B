@@ -96,16 +96,18 @@ permute = [ 1, 0, 2,]
 type = "mambalayer"
 d_model = 512
 nhead = 8
-d_state = 64
+d_state = 128
 headdim = 64
-d_conv = 2
+d_conv = 4
+nlayer = 5
 chunk_size = 256
 dim_feedforward = 2048
 deepnorm_alpha = 2.4494897
-deepnorm_beta = 0.9
+deepnorm_beta = 0.2886751
 
-[scaling]
-strategy = "pa"
+# changed to default scaling strategy
+# [scaling]
+# strategy = "pa"
 
 [run_info]
 sample_type = "dna"

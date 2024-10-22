@@ -1,2 +1,6 @@
 git
 flash-attn --no-build-isolation
+autoheader
+autoconf
+sudo apt-get install autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses5-dev libdeflate-dev
+wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.21.tar.bz2
