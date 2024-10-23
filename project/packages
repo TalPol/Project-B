@@ -1,6 +1,12 @@
 git
-flash-attn --no-build-isolation
+flash-attn --no-build-isolation # can't install when creating docker container
 autoheader
 autoconf
 sudo apt-get install autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses5-dev libdeflate-dev
 wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.21.tar.bz2
+# need to run these after creating the container (can't put them in the install)
+# pip install mamba-ssm --no-cache-dir
+# pip install flash-attn --no-build-isolation
+# docker run -it --gpus all -v $(pwd)/project:/app -v squigulator:/app/squigulator -v basecaller:/app/basecaller -v /var/run/docker.sock:/var/run/docker.sock --name *name* dev-environment
+# using transformers==4.45.1 might be a good  idea (ver pro0927_2 has it and this one has 4.45.2)
+# also maybe switch to the docker pull pytorch/pytorch:2.1.2-cuda12.1-cudnn8-devel

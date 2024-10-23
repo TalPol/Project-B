@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#Arguments:
+OUTPUT_FOLDER_PATH=$1
+URL=$2
+FILE_TYPE=$3
+MEMORY_LIMIT_GB=$4
+
+
