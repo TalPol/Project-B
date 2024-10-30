@@ -2,14 +2,12 @@
 
 #Arguments:
 INPUT=$1
-ZIPPING_TYPE=$2
-SOURCE_NAME=$3
-OUT_TYPE=$4
+OUT_TYPE=$2
 
-for file in "$INPUT/$SOURCE_NAME/zip"; do
-    if [[ "$file"==*".${ZIPPING_TYPE}" ]]; then
+for file in "$INPUT/*"; do
+    if [[ "$file" == *"*$OUT_TYPE*" ]]; then
         file_name=$(basename "$file")
-        output_path="$OUTPUT//${file_name%."$OUT_TYPE"}"
+        output_path="$INPUT/"$OUT_TYPE""
         mkdir -p "$output_path"
         unzip -q "$file" -d "$output_path"
     fi

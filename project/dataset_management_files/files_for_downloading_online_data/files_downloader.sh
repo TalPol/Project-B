@@ -11,27 +11,11 @@ if [ -z "$URL" ] || [ -z "$FILE_TYPE" ]; then
     exit 1
 fi
 
-# Check if the destination folder exists, create if not
-if [ ! -d "$DESTINATION" ]; then
-    mkdir -p "$DESTINATION"
-    echo "Created folder: $DESTINATION"
-else
-    # If the folder already exists, create a versioned folder
-    VERSION=1
-    while [ -d "$DESTINATION" ]; do
-        VERSION=$((VERSION + 1))
-        DESTINATION="${DESTINATION}_ver${VERSION}"
-    done
-    mkdir -p "$DESTINATION"
-    echo "Created folder: $DESTINATION"
-fi
-
-# Use curl to fetch the webpage and grep to find links
-curl -s "$URL" | grep -oP 'href="\K[^"]*\.(('"$FILE_TYPE"'|tar\.gz))' | while read -r link; do
-    # Download the file
-    file_name=$(basename "$link")
-    curl -o "$DESTINATION/$file_name" "$link"
-    echo "Downloaded and logged: $file_name"
+curl -s "$URL" | grep -oP 'href="\K[^"]*'"$FILE_TYPE"'[^"]*\.(tar\.gz|gz)' | while read -r link; do
+# Download the file
+file_name=$(basename "$link")
+curl -o "$DESTINATION/zip/$file_name" "$link"
+echo "Downloaded and logged: $file_name"
 done
 
 echo "All files matching the criteria have been downloaded and logged."

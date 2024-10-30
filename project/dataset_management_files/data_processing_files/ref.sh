@@ -12,3 +12,8 @@ nohup bonito basecaller dna_r9.4.1_e8_hac@v3.3 --recursive --save-ctc --referenc
 
 
 #File by TalPol, to be written by me later
+
+# command didn't work for single file, supposed to be used on dirs
+# aws s3 sync --no-sign-request s3://ont-open-data/giab_2023.05/flowcells/hg001/20230505_1857_1B_PAO99309_94e07fab/sequencing_summary_PAO99309_94e07fab_c3641428.txt ./squigulator/dataset/train/metadata/
+# command downloaded single file
+# aws s3 cp --no-sign-request s3://ont-open-data/giab_2023.05/flowcells/hg001/20230505_1857_1B_PAO99309_94e07fab/sequencing_summary_PAO99309_94e07fab_c3641428.txt ./squigulator/dataset/train/metadata/

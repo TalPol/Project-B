@@ -3,6 +3,7 @@ einops
 transformers
 setuptools
 ont-bonito
-mamba-ssm
-causal-conv1d
-flash-attn --no-build-isolation # added later and didn't test
+pod5
+# I know from bash history in pro0927_2 that 
+# pip install mamba-ssm --no-cache-dir
+# is what fixed at least one problem

@@ -2,8 +2,21 @@ git
 flash-attn --no-build-isolation # can't install when creating docker container
 autoheader
 autoconf
-sudo apt-get install autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses5-dev libdeflate-dev
+curl
+sudo
+sudo apt-get install autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses5-dev libdeflate-dev unzip
+apt-get install libhdf5-dev 
 wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.21.tar.bz2
+wget "https://github.com/hasindu2008/slow5tools/releases/download/v1.3.0/slow5tools-v1.3.0-release.tar.gz" && tar xvf slow5tools-v1.3.0-release.tar.gz && cd slow5tools-v1.3.0/ && ./configure
+
+# for aws
+apt-get install groff
+apt-get install less # prob(don't remember the actual command)
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+./aws/install -i /usr/local/aws-cli -b /usr/local/bin
+
+
 # need to run these after creating the container (can't put them in the install)
 # pip install mamba-ssm --no-cache-dir
 # pip install flash-attn --no-build-isolation
