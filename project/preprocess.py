@@ -1,6 +1,66 @@
 import os
 import numpy as np
+import sys
+import pod5
+from pod5 import Reader
+from Bio import SeqIO
 
+def preprocess(fasta_file, pod5_file, output_directory):
+    # Create a dictionary for translating nucleotide characters to integers
+    translation_dict = {65: '1', 67: '2', 71: '3', 84: '4'}
+    targets = []
+    lengths = []
+    chunks = []
+    with open(fasta_file, 'r') as file:
+        for line in file:
+            line = line.strip()
+            # Skip header lines (those starting with '>')
+            if line.startswith('>'):
+                continue
+            # Translate the sequence to integers
+            target = [int(x) for x in line.translate(translation_dict)]
+            targets.append(target)
+            lengths.append(len(target))
+
+    with Reader(pod5_file) as reader:
+        for read in reader.reads():
+            chunks.append(read.signal)
+
+    max_length = max(len(chunk) for chunk in chunks)
+    chunks = np.array(
+        [np.pad(chunk, (0, max_length - len(chunk)), 'constant') for chunk in chunks], dtype=np.float16
+    )
+
+
+    # chunks = np.array(chunks, dtype=np.float16)
+    targets_ = np.zeros((chunks.shape[0], max(lengths)), dtype=np.uint8)
+    for idx, target in enumerate(targets): targets_[idx, :len(target)] = target
+    lengths = np.array(lengths, dtype=np.uint16)
+
+    np.save(os.path.join(output_directory, "chunks.npy"), chunks)
+    np.save(os.path.join(output_directory, "references.npy"), targets_)
+    np.save(os.path.join(output_directory, "reference_lengths.npy"), lengths)
+    
+    sys.stderr.write(f"> written ctc training data to {output_directory}\n")
+    sys.stderr.write("  - chunks.npy with shape (%s)\n" % ','.join(map(str, chunks.shape)))
+    sys.stderr.write("  - references.npy with shape (%s)\n" % ','.join(map(str, targets_.shape)))
+    sys.stderr.write("  - reference_lengths.npy shape (%s)\n" % ','.join(map(str, lengths.shape)))
+
+if __name__ == "__main__":
+    if len(sys.argv) != 4:
+        sys.stderr.write("Usage: python preprocess.py <fasta_file> <pod5_file> <output_directory>\n")
+        sys.exit(1)
+
+    fasta_file = sys.argv[1]
+    pod5_file = sys.argv[2]
+    output_directory = sys.argv[3]
+
+    preprocess(fasta_file, pod5_file, output_directory)
+
+
+
+
+'''
 OUTDIR = '/tmp'
 DIRS = [
     '/data/p1',
@@ -33,3 +93,5 @@ chunks = np.concatenate(CHUNKS, axis=0)
 np.save(os.path.join(OUTDIR, 'reference_lengths.npy'), lens)
 np.save(os.path.join(OUTDIR, 'references.npy'), refs)
 np.save(os.path.join(OUTDIR, 'chunks.npy'), chunks)
+'''
+

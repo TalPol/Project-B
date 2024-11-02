@@ -6,3 +6,5 @@ setuptools
 ont-bonito
 causal-conv1d
 pod5
+optuna # added this
+biopython # added this

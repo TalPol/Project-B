@@ -30,7 +30,7 @@ for file in $FOLDER_PATH/fasta/*; do
             # ONT friendly:    
             ./squigulator-v0.4.0/squigulator \
             $file \
-            -x dna-r9-min \
+            -x dna-r10-min \
             -o "$FOLDER_PATH/slow5/friendly/"${folder_name}"_sim_slow5"/${folder_name}_sim_${index}_friendly.slow5 \
             -n 4000 \
             -q $FOLDER_PATH/fasta/${folder_name}_sim_${index}_ref_friendly.fasta \
@@ -40,7 +40,7 @@ for file in $FOLDER_PATH/fasta/*; do
             #ONT aggressive
             ./squigulator-v0.4.0/squigulator \
             $file \
-            -x dna-r9-min \
+            -x dna-r10-min \
             -o "$FOLDER_PATH/slow5/aggressive/"${folder_name}"_sim_slow5"/${folder_name}_sim_${index}_aggressive.slow5 \
             -n 4000 \
             -q $FOLDER_PATH/fasta/${folder_name}_sim_${index}_ref_aggressive.fasta \
