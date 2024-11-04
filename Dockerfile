@@ -3,6 +3,8 @@ FROM pytorch/pytorch:2.1.2-cuda12.1-cudnn8-devel
 RUN apt-get update && apt-get install -y ninja-build
 RUN pip install --upgrade pip
 
+# Need to somehow to upgrade the ubuntu version 22.04
+
 # Set the working directory in the container
 WORKDIR /app
 

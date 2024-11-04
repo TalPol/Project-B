@@ -3,7 +3,8 @@ import numpy as np
 import sys
 import pod5
 from pod5 import Reader
-from Bio import SeqIO
+from bonito.reader import normalisation
+# from Bio import SeqIO
 
 def preprocess(fasta_file, pod5_file, output_directory):
     # Create a dictionary for translating nucleotide characters to integers
@@ -11,21 +12,36 @@ def preprocess(fasta_file, pod5_file, output_directory):
     targets = []
     lengths = []
     chunks = []
-    with open(fasta_file, 'r') as file:
-        for line in file:
-            line = line.strip()
+    with open(fasta_file, 'r') as file, Reader(pod5_file) as reader:
+        fasta_lines = (line.strip() for line in file if not line.startswith('>'))
+        for line, read in zip(fasta_lines, reader.reads()):
+            # line = line.strip()
             # Skip header lines (those starting with '>')
-            if line.startswith('>'):
-                continue
+            #if line.startswith('>'):
+             #   continue
             # Translate the sequence to integers
             target = [int(x) for x in line.translate(translation_dict)]
+            # read = next(read)
+            #if read.sample_count > 5000:
+            #    continue
+
+            sig = read.signal
+            
+            #shift, scale = normalisation(sig)
+            #sig = (sig - shift) / scale
+            
             targets.append(target)
             lengths.append(len(target))
-
+            chunks.append(sig)
+    '''
     with Reader(pod5_file) as reader:
         for read in reader.reads():
-            chunks.append(read.signal)
-
+            sig = read.signal
+            shift, scale = normalisation(sig)
+            sig = (sig - shift) / scale
+            chunks.append(sig)
+    '''
+    
     max_length = max(len(chunk) for chunk in chunks)
     chunks = np.array(
         [np.pad(chunk, (0, max_length - len(chunk)), 'constant') for chunk in chunks], dtype=np.float16

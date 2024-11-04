@@ -4,7 +4,8 @@
 FOLDER_PATH=$1
 
 N=3
-
+mkdir -p "$FOLDER_PATH/slow5"
+mkdir -p "$FOLDER_PATH/sam"
 for file in $FOLDER_PATH/fasta/*; do
     if [[ "$file" != *_sim_* ]]; then
         file_name=$(basename "$file")
@@ -14,8 +15,7 @@ for file in $FOLDER_PATH/fasta/*; do
         output_file_name="${file_name//.fasta/}"
         output_file_name="${output_file_name//fasta/}"
 
-        mkdir -p "$FOLDER_PATH/slow5/friendly/"${folder_name}"_sim_slow5"
-        mkdir -p "$FOLDER_PATH/slow5/aggressive/"${folder_name}"_sim_slow5"
+        #mkdir -p "$FOLDER_PATH/slow5/"${folder_name}"_sim_slow5"
 
         for ((index=1; index<=N; index++)); do
             #Example of code line in squ_handler:
@@ -31,24 +31,13 @@ for file in $FOLDER_PATH/fasta/*; do
             ./squigulator-v0.4.0/squigulator \
             $file \
             -x dna-r10-min \
-            -o "$FOLDER_PATH/slow5/friendly/"${folder_name}"_sim_slow5"/${folder_name}_sim_${index}_friendly.slow5 \
-            -n 4000 \
-            -q $FOLDER_PATH/fasta/${folder_name}_sim_${index}_ref_friendly.fasta \
-            -c $FOLDER_PATH/sam/${folder_name}_sam_sim_${index}_friendly.sam \
+            -o "$FOLDER_PATH/slow5/"${folder_name}_sim_${index}.slow5 \
+            -n 4000 -r 750 --dwell-std 4.0 --dwell-mean 12.0 \
+            -a $FOLDER_PATH/sam/${folder_name}_sim_${index}.sam \
             --seed $index --ont-friendly=yes
             
-            #ONT aggressive
-            ./squigulator-v0.4.0/squigulator \
-            $file \
-            -x dna-r10-min \
-            -o "$FOLDER_PATH/slow5/aggressive/"${folder_name}"_sim_slow5"/${folder_name}_sim_${index}_aggressive.slow5 \
-            -n 4000 \
-            -q $FOLDER_PATH/fasta/${folder_name}_sim_${index}_ref_aggressive.fasta \
-            -c $FOLDER_PATH/sam/${folder_name}_sam_sim_${index}_aggressive.sam \
-            --seed $index --ont-friendly=no
+            # -q $FOLDER_PATH/fasta/${folder_name}_sim_${index}_ref.fasta \
             
-
-
         done
         #iteration N
     fi

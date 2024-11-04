@@ -8,10 +8,17 @@
 
 #Arguments:
 FOLDER_PATH=$1
+OUTPUT_PATH=$2
 
 ./dataset_management_files/data_processing_files/squ_handler.sh "$FOLDER_PATH"
-./slow5tools-v1.2.0/slow5tools s2f "$FOLDER_PATH/slow5/friendly" -d "$FOLDER_PATH/fast5"
-rm -r $FOLDER_PATH/slow5/friendly
-./dataset_management_files/slow5_to_fast_5_to_pod5/fapo5_manager.sh "$FOLDER_PATH/fast5" "$FOLDER_PATH/pod5"
-rm -r $FOLDER_PATH/fast5/
+./dataset_management_files/slow5_to_fast_5_to_pod5/npy_converter.sh "$FOLDER_PATH" "$OUTPUT_PATH"
+rm -r $FOLDER_PATH/slow5/
+rm -r $FOLDER_PATH/sam/
+#./slow5tools-v1.2.0/slow5tools s2f "$FOLDER_PATH/slow5/" -d "$FOLDER_PATH/fast5"
+#Cannot remove slow5 files
+#rm -r $FOLDER_PATH/slow5/
+#./dataset_management_files/slow5_to_fast_5_to_pod5/fapo5_manager.sh "$FOLDER_PATH/fast5" "$FOLDER_PATH/pod5"
+#rm -r $FOLDER_PATH/fast5/
+
+
 

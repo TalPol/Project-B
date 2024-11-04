@@ -8,3 +8,5 @@ causal-conv1d
 pod5
 optuna # added this
 biopython # added this
+pyslow5 # added
+pysam # added
