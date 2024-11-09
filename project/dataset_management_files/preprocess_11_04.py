@@ -7,8 +7,8 @@ import re
 from bonito.reader import normalisation
 
 # Constants
-FIXED_LENGTH = 3000  # Target length for each trimmed signal segment
-OVERLAP = 300        # Overlap in samples between consecutive segments
+FIXED_LENGTH = 5000  # Target length for each trimmed signal segment
+OVERLAP = 100        # Overlap in samples between consecutive segments
 
 # Load the .slow5 file
 def load_slow5_data(slow5_file_path):
@@ -17,8 +17,8 @@ def load_slow5_data(slow5_file_path):
     for read in s5.seq_reads():
         read_id = read['read_id']
         raw_signal = read['signal']
-        shift, scale = normalisation(raw_signal)
-        raw_signal = (raw_signal - shift) / scale
+        #shift, scale = normalisation(raw_signal)
+        #raw_signal = (raw_signal - shift) / scale
         slow5_data[read_id] = raw_signal
     return slow5_data
 
@@ -156,7 +156,8 @@ def process_reads(slow5_data, sam_data, output_dir):
                 all_lengths.append(len(seg_nucleotides))  # Append the length of the nucleotide segment
 
     # Prepare numpy arrays for storage
-    chunks = np.array(all_signals, dtype=np.float16)            
+    chunks = np.array(all_signals, dtype=np.float16)
+                
     max_length = max(all_lengths)  # Determine the maximum length for targets_
     targets_ = np.zeros((chunks.shape[0], max_length), dtype=np.uint8)
     

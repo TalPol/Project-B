@@ -23,3 +23,4 @@ unzip awscliv2.zip
 # docker run -it --gpus all -v $(pwd)/project:/app -v squigulator:/app/squigulator -v basecaller:/app/basecaller -v /var/run/docker.sock:/var/run/docker.sock --name *name* dev-environment
 # using transformers==4.45.1 might be a good  idea (ver pro0927_2 has it and this one has 4.45.2)
 # also maybe switch to the docker pull pytorch/pytorch:2.1.2-cuda12.1-cudnn8-devel
+apt install tmux
