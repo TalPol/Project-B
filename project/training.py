@@ -1,32 +1,29 @@
+"""
+Bonito train
+"""
+
+import math
 import os
-import numpy as np
-import pandas as pd
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-
-import optuna
-
-import mamba_ssm
-from mamba_ssm import Mamba2
-
+import re
 from glob import glob
 from functools import partial
 from time import perf_counter
 from collections import OrderedDict
 from datetime import datetime
-import re
 
 from bonito.schedule import linear_warmup_cosine_decay
 from bonito.util import accuracy, decode_ref, permute, concat, match_names, tqdm_environ
 import bonito
 
-import pod5
-from pod5 import Reader
-from Bio import SeqIO
+import optuna
 
+import torch
+import numpy as np
+import torch.nn as nn
 from tqdm import tqdm
 import torch.cuda.amp as amp
+torch.cuda.set_per_process_memory_fraction(0.5)
+
 
 def load_state(dirname, device, model, optim=None):
     """
@@ -75,82 +72,31 @@ def load_state(dirname, device, model, optim=None):
 
     return epoch
 
-def load_translations(fasta_files):
-    translations = {}
-    for fasta_file in fasta_files:
-        for record in SeqIO.parse(fasta_file, "fasta"):
-            translations[record.id] = str(record.seq)
-    return translations
 
-class Pod5BasecallerDataset(Dataset):
-    def __init__(self, pod5_files, fasta_files, chunk_size=2000, transform=None):
-        self.pod5_files = pod5_files
-        self.fasta_files = fasta_files
-        self.translation = load_translations(fasta_files)
-        self.chunk_size = chunk_size
-        self.transform = transform
-        
+class ClipGrad:
+    def __init__(self, quantile=0.5, factor=2.0, buffer_size=100):
+        self.buffer = np.full(buffer_size, fill_value=1e6)
+        self.quantile = quantile
+        self.factor = factor
+        self.i = 0
 
-    def __len__(self):
-        # Total number of chunks in all files
-        total_chunks = 0
-        for file in self.pod5_files:
-            with Reader(file) as reader:
-                data_len = 0
-                for read in read.reads():
-                    data_len += len(read.signal)  # Assume this gives total sequence length
-                
-                total_chunks += (data_len + self.chunk_size - 1) // self.chunk_size
-        return total_chunks
+    def append(self, grad_norm):
+        self.buffer[self.i] = grad_norm
+        self.i = (self.i + 1) % len(self.buffer)
 
-    def __getitem__(self, idx):
-        # Calculate which file and chunk within the file corresponds to `idx`
-        file_idx, chunk_idx = self._get_file_and_chunk_idx(idx)
-        
-        with Reader(self.pod5_files[file_idx]) as reader:
-            for read in reader.reads():
-                data = read.signal
-            read = next()
-            data = pod5.get_sequence_data()
-            label = pod5.get_label_data()
-
-            start = chunk_idx * self.chunk_size
-            end = min(start + self.chunk_size, len(data))
-            
-            chunk_data = data[start:end]
-            chunk_label = label[start:end]
-
-            if self.transform:
-                chunk_data = self.transform(chunk_data)
-
-            return torch.tensor(chunk_data, dtype=torch.float32), torch.tensor(chunk_label, dtype=torch.long)
-    
-    def _get_file_and_chunk_idx(self, idx):
-        # Map global idx to file index and chunk index within the file
-        accumulated_chunks = 0
-        for file_idx, file in enumerate(self.pod5_files):
-            with Reader(file) as pod5:
-                data_len = len(pod5.get_sequence_data())
-                num_chunks = (data_len + self.chunk_size - 1) // self.chunk_size
-                
-                if accumulated_chunks + num_chunks > idx:
-                    return file_idx, idx - accumulated_chunks
-                accumulated_chunks += num_chunks
-        raise IndexError("Index out of range")
-
-# Custom collate function for variable-length chunks
-def collate_fn(batch):
-    data, labels = zip(*batch)
-    data_padded = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0)
-    labels_padded = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True, padding_value=-1)
-    return data_padded, labels_padded
+    def __call__(self, parameters):
+        max_norm = self.factor * np.quantile(self.buffer, self.quantile)
+        grad_norm = torch.nn.utils.clip_grad_norm_(parameters, max_norm=max_norm).item()
+        if not math.isnan(grad_norm):
+            self.append(grad_norm)
+        return grad_norm
 
 
 class Trainer:
     def __init__(
         self, model, device, train_loader, valid_loader, criterion=None,
         use_amp=True, lr_scheduler_fn=None, restore_optim=False,
-        save_optim_every=10
+        save_optim_every=10, grad_accum_split=1, quantile_grad_clip=False
     ):
         self.model = model.to(device)
         self.device = device
@@ -161,5 +107,220 @@ class Trainer:
         self.lr_scheduler_fn = lr_scheduler_fn or linear_warmup_cosine_decay()
         self.restore_optim = restore_optim
         self.save_optim_every = save_optim_every
+        self.grad_accum_split = grad_accum_split
         self.scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
         self.optimizer = None
+        if quantile_grad_clip:
+            self.clip_grad = ClipGrad()
+        else:
+            self.clip_grad = lambda parameters: torch.nn.utils.clip_grad_norm_(parameters, max_norm=2.0).item()
+
+    def train_one_step(self, batch):
+        self.optimizer.zero_grad()
+
+        losses = None
+        with amp.autocast(enabled=self.use_amp):
+            for batch_ in zip(
+                *map(lambda t: t.chunk(self.grad_accum_split, dim=0), batch)
+            ):
+                data_, targets_, lengths_, *args = (x.to(self.device) for x in batch_)
+
+                scores_ = self.model(data_, *args)
+                losses_ = self.criterion(scores_, targets_, lengths_)
+
+                if not isinstance(losses_, dict): losses_ = {'loss': losses_}
+
+                total_loss = losses_.get('total_loss', losses_['loss']) / self.grad_accum_split
+                self.scaler.scale(total_loss).backward()
+
+                losses = {
+                    k: ((v.item() / self.grad_accum_split) if losses is None else (v.item() / self.grad_accum_split) + losses[k])
+                    for k, v in losses_.items()
+                }
+
+        self.scaler.unscale_(self.optimizer)
+        grad_norm = self.clip_grad(self.model.parameters())
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
+
+        return losses, grad_norm
+
+    def train_one_epoch(self, loss_log, lr_scheduler):
+        t0 = perf_counter()
+        chunks = 0
+        self.model.train()
+
+        progress_bar = tqdm(
+            total=len(self.train_loader), desc='[0/{}]'.format(len(self.train_loader.sampler)),
+            ascii=True, leave=True, ncols=100, bar_format='{l_bar}{bar}| [{elapsed}{postfix}]',
+            **tqdm_environ()
+        )
+        smoothed_loss = None
+
+        with progress_bar:
+
+            for batch in self.train_loader:
+
+                chunks += batch[0].shape[0]
+
+                losses, grad_norm = self.train_one_step(batch)
+
+                smoothed_loss = losses['loss'] if smoothed_loss is None else (0.01 * losses['loss'] + 0.99 * smoothed_loss)
+
+                progress_bar.set_postfix(loss='%.4f' % smoothed_loss)
+                progress_bar.set_description("[{}/{}]".format(chunks, len(self.train_loader.sampler)))
+                progress_bar.update()
+
+                if loss_log is not None:
+                    lr = lr_scheduler.get_last_lr() if lr_scheduler is not None else [pg["lr"] for pg in self.optimizer.param_groups]
+                    if len(lr) == 1: lr = lr[0]
+                    loss_log.append({
+                        'chunks': chunks,
+                        'time': perf_counter() - t0,
+                        'grad_norm': grad_norm,
+                        'lr': lr,
+                        **losses
+                    })
+
+                if lr_scheduler is not None: lr_scheduler.step()
+
+        return smoothed_loss, perf_counter() - t0
+
+    def validate_one_step(self, batch):
+        data, targets, lengths, *args = batch
+        with amp.autocast(enabled=self.use_amp):
+            scores = self.model(data.to(self.device), *(x.to(self.device) for x in args))
+            losses = self.criterion(scores, targets.to(self.device), lengths.to(self.device))
+        losses = {k: v.item() for k, v in losses.items()} if isinstance(losses, dict) else losses.item()
+        if hasattr(self.model, 'decode_batch'):
+            seqs = self.model.decode_batch(scores)
+        else:
+            seqs = [self.model.decode(x) for x in permute(scores, 'TNC', 'NTC')]
+        refs = [decode_ref(target, self.model.alphabet) for target in targets]
+
+        n_pre = getattr(self.model, "n_pre_context_bases", 0)
+        n_post = getattr(self.model, "n_post_context_bases", 0)
+        if n_pre > 0 or n_post > 0:
+            refs = [ref[n_pre:len(ref)-n_post] for ref in refs]
+
+        accs = [
+            accuracy(ref, seq, min_coverage=0.5) if len(seq) else 0. for ref, seq in zip(refs, seqs)
+        ]
+        return seqs, refs, accs, losses
+
+    def validate_one_epoch(self):
+        self.model.eval()
+        with torch.no_grad():
+            seqs, refs, accs, losses = zip(*(self.validate_one_step(batch) for batch in self.valid_loader))
+        seqs, refs, accs = (sum(x, []) for x in (seqs, refs, accs))
+        loss = np.mean([(x['loss'] if isinstance(x, dict) else x) for x in losses])
+        return loss, np.mean(accs), np.median(accs)
+
+    def init_optimizer(self, lr, **kwargs):
+        if isinstance(lr, (list, tuple)):
+            if len(list(self.model.children())) != len(lr):
+                raise ValueError('Number of lrs does not match number of model children')
+            param_groups = [{'params': list(m.parameters()), 'lr': v} for (m, v) in zip(self.model.children(), lr)]
+            self.optimizer = torch.optim.AdamW(param_groups, lr=lr[0], **kwargs)
+        else:
+            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, **kwargs)
+
+    def get_lr_scheduler(self, epochs, last_epoch=0):
+        return self.lr_scheduler_fn(self.optimizer, self.train_loader, epochs, last_epoch)
+
+    def fit(self, workdir, epochs=1, lr=2e-3, **optim_kwargs):
+        best_val_loss = float("inf")
+        best_val_acc = 0.0
+        if self.optimizer is None:
+            self.init_optimizer(lr, **optim_kwargs)
+
+        last_epoch = load_state(workdir, self.device, self.model, self.optimizer if self.restore_optim else None)
+
+        if self.restore_optim:
+        # override learning rate to new value
+            for i, pg in enumerate(self.optimizer.param_groups):
+                pg["initial_lr"] = pg["lr"] = lr[i] if isinstance(lr, (list, tuple)) else lr
+
+        lr_scheduler = self.get_lr_scheduler(epochs, last_epoch=last_epoch)
+
+        for epoch in range(1 + last_epoch, epochs + 1):
+            try:
+                with bonito.io.CSVLogger(os.path.join(workdir, 'losses_{}.csv'.format(epoch))) as loss_log:
+                    train_loss, duration = self.train_one_epoch(loss_log, lr_scheduler)
+
+                model_state = self.model.module.state_dict() if hasattr(self.model, 'module') else self.model.state_dict()
+                torch.save(model_state, os.path.join(workdir, "weights_%s.tar" % epoch))
+                if epoch % self.save_optim_every == 0:
+                    torch.save(self.optimizer.state_dict(), os.path.join(workdir, "optim_%s.tar" % epoch))
+
+                val_loss, val_mean, val_median = self.validate_one_epoch()
+            except KeyboardInterrupt:
+                break
+
+            print("[epoch {}] directory={} loss={:.4f} mean_acc={:.3f}% median_acc={:.3f}%".format(
+                epoch, workdir, val_loss, val_mean, val_median
+            ))
+
+            with bonito.io.CSVLogger(os.path.join(workdir, 'training.csv')) as training_log:
+                training_log.append({
+                    'time': datetime.today(),
+                    'duration': int(duration),
+                    'epoch': epoch,
+                    'train_loss': train_loss,
+                    'validation_loss': val_loss,
+                    'validation_mean': val_mean,
+                    'validation_median': val_median
+                })
+            if val_mean > best_val_acc:
+                best_val_acc = val_loss
+        return best_val_acc
+
+    def fit_optuna(self, workdir, trial, epochs=1, lr=2e-3, **optim_kwargs):
+        best_val_loss = float("inf")
+        best_val_acc = 0.0
+        if self.optimizer is None:
+            self.init_optimizer(lr, **optim_kwargs)
+
+        last_epoch = load_state(workdir, self.device, self.model, self.optimizer if self.restore_optim else None)
+
+        if self.restore_optim:
+        # override learning rate to new value
+            for i, pg in enumerate(self.optimizer.param_groups):
+                pg["initial_lr"] = pg["lr"] = lr[i] if isinstance(lr, (list, tuple)) else lr
+
+        lr_scheduler = self.get_lr_scheduler(epochs, last_epoch=last_epoch)
+
+        for epoch in range(1 + last_epoch, epochs + 1):
+            try:
+                with bonito.io.CSVLogger(os.path.join(workdir, 'losses_{}.csv'.format(epoch))) as loss_log:
+                    train_loss, duration = self.train_one_epoch(loss_log, lr_scheduler)
+
+                model_state = self.model.module.state_dict() if hasattr(self.model, 'module') else self.model.state_dict()
+                torch.save(model_state, os.path.join(workdir, "weights_%s.tar" % epoch))
+                if epoch % self.save_optim_every == 0:
+                    torch.save(self.optimizer.state_dict(), os.path.join(workdir, "optim_%s.tar" % epoch))
+
+                val_loss, val_mean, val_median = self.validate_one_epoch()
+            except KeyboardInterrupt:
+                break
+
+            print("[epoch {}] directory={} loss={:.4f} mean_acc={:.3f}% median_acc={:.3f}%".format(
+                epoch, workdir, val_loss, val_mean, val_median
+            ))
+
+            with bonito.io.CSVLogger(os.path.join(workdir, 'training.csv')) as training_log:
+                training_log.append({
+                    'time': datetime.today(),
+                    'duration': int(duration),
+                    'epoch': epoch,
+                    'train_loss': train_loss,
+                    'validation_loss': val_loss,
+                    'validation_mean': val_mean,
+                    'validation_median': val_median
+                })
+                trial.report(val_mean, epoch)
+                if trial.should_prune():
+                    raise optuna.exceptions.TrialPruned()
+            if val_mean > best_val_acc:
+                best_val_acc = val_mean
+        return best_val_acc

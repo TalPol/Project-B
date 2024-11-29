@@ -3,7 +3,7 @@ import torch
 from models.mamba.model import Model
 
 
-config_path = "./models/config/mamba_dim_128.toml"
+config_path = "./bonito/bonito/models/dna_r9.4.1_e8_hac@v3.3/config.toml"
 config = toml.load(config_path)
 
 # Step 2: Initialize the model using the configuration
