@@ -17,4 +17,4 @@ libncurses5-dev
 libdeflate-dev
 unzip
 g++
-minimap2
+curl

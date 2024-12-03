@@ -1,0 +1,95 @@
+[model]
+type = "seqdistmodel"
+package = "models.mamba"
+
+[model.seqdist]
+state_len = 4
+alphabet = [ "N", "A", "C", "G", "T",]
+
+[model.encoder]
+type = "namedserial"
+
+[model.encoder.conv]
+type = "serial"
+[[model.encoder.conv.sublayers]]
+type = "convolution"
+insize = 1
+size = 16
+bias = true
+winlen = 5
+stride = 1
+padding = 2
+activation = "swish"
+norm = "batchnorm"
+
+[[model.encoder.conv.sublayers]]
+type = "convolution"
+insize = 16
+size = 64
+bias = true
+winlen = 5
+stride = 1
+padding = 2
+activation = "swish"
+norm = "batchnorm"
+
+[[model.encoder.conv.sublayers]]
+type = "convolution"
+insize = 64
+size = 128
+bias = true
+winlen = 5
+stride = 1
+padding = 2
+activation = "swish"
+norm = "batchnorm"
+
+[[model.encoder.conv.sublayers]]
+type = "permute"
+dims = [ 0, 2, 1,]
+
+[model.encoder.crf]
+type = "linearcrfencoder"
+insize = 128
+n_base = 2
+state_len = 6
+bias = false
+scale = 5.0
+blank_score = 2.0
+expand_blanks = false
+permute = [ 1, 0, 2,]
+
+[model.encoder.transformer_encoder]
+type = "mambalayer"
+d_model = 128
+nhead = 1
+d_state = 32
+headdim = 32
+d_conv = 4
+nlayer = 1  
+chunk_size = 256
+dim_feedforward = 512  
+deepnorm_alpha = 2.4494897
+deepnorm_beta = 0.2886751
+
+
+[scaling]
+strategy = "pa"
+
+[run_info]
+sample_type = "dna"
+sample_rate = 5000
+
+[standardisation]
+standardise = 1
+mean = 93.69239463939118
+stdev = 23.506745239082388
+
+[qscore]
+scale = 1.05
+bias = -0.6
+
+[basecaller]
+batchsize = 128
+chunksize = 5000
+overlap = 250

@@ -16,6 +16,7 @@ RUN pip install -r requirements.txt
 RUN pip install flash-attn --no-build-isolation
 RUN pip install mamba-ssm --no-cache-dir
 RUN pip install causal-conv1d
+RUN minimap2.sh
 SHELL ["/bin/bash", "-c"]
 # Keep the container running, allowing you to connect and develop
 CMD ["bash"]
