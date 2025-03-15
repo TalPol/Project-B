@@ -1,3 +1,24 @@
+#!/usr/bin/env python3
+"""
+Copyright 2019 Ryan Wick (rrwick@gmail.com)
+https://github.com/rrwick/Basecalling-comparison
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version. This program is distributed in the hope that it
+will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should
+have received a copy of the GNU General Public License along with this program. If not, see
+<http://www.gnu.org/licenses/>.
+
+This script reads a tsv file (for either read or assembly data) and returns the median identity.
+It can optionally take a total number of sequences, which will make it add zeros to get to that
+number (useful for basecallers that didn't basecall all of the reads).
+"""
+
+import statistics
+import sys
+import numpy as np
 import time
 import numpy as np
 from Bio import SeqIO
@@ -16,40 +37,6 @@ import subprocess
 from bonito.data import load_numpy, load_script
 from bonito.util import accuracy, poa, decode_ref, half_supported
 from bonito.util import init, load_model, permute, parasail_to_sam
-
-def accuracy(ref, seq, balanced=False, min_coverage=0.0):
-    alignment = parasail.sw_trace_striped_32(seq, ref, 8, 4, parasail.dnafull)
-    counts = defaultdict(int)
-
-    q_coverage = len(alignment.traceback.query) / len(seq)
-    r_coverage = len(alignment.traceback.ref) / len(ref)
-
-    if r_coverage < min_coverage:
-        return 0.0
-
-    _, cigar = parasail_to_sam(alignment, seq)
-
-    for count, op in re.findall(r"(\d+)([MIDNSHP=X])", cigar):
-        counts[op] += int(count)
-
-    if balanced:
-        accuracy = (counts['='] - counts['I']) / (counts['='] + counts['X'] + counts['D'])
-    else:
-        accuracy = counts['='] / (counts['='] + counts['I'] + counts['X'] + counts['D'])
-    return accuracy * 100
-
-# Parse FASTA file for references
-def parse_fasta(fasta_file):
-    return {record.id: str(record.seq) for record in SeqIO.parse(fasta_file, "fasta")}
-
-# Parse SAM file for reads and basecalls
-def parse_sam(sam_file):
-    reads = []
-    with AlignmentFile(sam_file, "r") as sam:
-        for read in sam.fetch(until_eof=True):
-            if not read.is_unmapped:
-                reads.append((read.query_name, read.query_sequence))
-    return reads
 
 def basecall_with_bonito(model_path, input_dir, output_sam, reference, batchsize=32, device="cuda"):
     """
@@ -72,14 +59,13 @@ def basecall_with_bonito(model_path, input_dir, output_sam, reference, batchsize
 
 def main(args):
     print("* loading data")
-    references = pysam.FastaFile(args.reference)
+    #references = pysam.FastaFile(args.reference)
     #references = parse_fasta(args.reference)
     init(args.seed, args.device)
     output_dir = args.output_dir
     input_dir = args.directory
     alignment_sam = output_dir / "alignment.sam"
-
-    accuracy_with_cov = lambda ref, seq: accuracy(ref, seq, min_coverage=0.0)
+    alignment_file = output_dir / "alignment_summary.tsv"
     duration = basecall_with_bonito(
         model_path=args.model_directory,
         input_dir=input_dir,
@@ -87,35 +73,31 @@ def main(args):
         reference=args.reference,
     )
     #reads = parse_sam(alignment_sam)
-    reads = pysam.AlignmentFile(alignment_sam, "rb")
+    #reads = pysam.AlignmentFile(alignment_sam, "rb")
 
-    seqs = []
-
-    print("* loading model")
-    model = load_model(args.model_directory, args.device)
-    mean = model.config.get("standardisation", {}).get("mean", 0.0)
-    stdev = model.config.get("standardisation", {}).get("stdev", 1.0)
-    print(f"* * signal standardisation params: mean={mean}, stdev={stdev}")
-
-    print("* calling")
-
-    accuracies = []
-    with torch.no_grad():
-        for read in reads.fetch():
-            if read.is_unmapped:
-                #print(f"Read name {read_name} not in references.")
+    #seqs = []
+    identities = []
+    unmapped = 0
+    with open(alignment_file, 'rt') as data_file:
+        for line in data_file:
+            parts = line.strip().split()
+            if parts[0] == 'filename' or parts[0] == '-':
                 continue
-            read_seq = read.query_sequence
-            #ref_seq = references[read_name]
-            ref_seq = references.fetch(read.reference_name, read.reference_start, read.reference_end)
-            seqs.append(read_seq)
-            accuracies.append(accuracy_with_cov(ref_seq, read_seq) if len(read_seq) else 0.0)
+            if float(parts[-1]) == 0.0:
+                unmapped += 1
+                continue
 
+            #print(parts[10])
+            #identity = np.exp(np.log(10) * (-float( parts[-1]) / 10))
+            #print(parts[10])
+            #identities.append(1 - identity)
+            identities.append(float(parts[-1]))
 
-    print("* mean      %.2f%%" % np.mean(accuracies))
-    print("* median    %.2f%%" % np.median(accuracies))
+    print("* mean      %.5f%%" % np.mean(identities))
+    print("* median    %.5f%%" % np.median(identities))
     print("* time      %.2f" % duration)
-    # print("* samples/s %.2E" % (len(seqs) / duration))
+    print("* unmapped  ", unmapped)
+
 
 def argparser():
     parser = ArgumentParser(
@@ -155,3 +137,26 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     args.func(args)
+
+'''
+identities = []
+unmapped = 0
+with open(sys.argv[1], 'rt') as data_file:
+    for line in data_file:
+        parts = line.strip().split()
+        if parts[0] == 'filename' or parts[0] == '-':
+            continue
+        if float(parts[-1]) == 0.0:
+            unmapped += 1
+            continue
+
+        #print(parts[10])
+        #identity = np.exp(np.log(10) * (-float( parts[-1]) / 10))
+        #print(parts[10])
+        #identities.append(1 - identity)
+        identities.append(float(parts[-1]))
+
+
+print(np.mean(identities))
+print("unmapped reads:", unmapped)
+'''

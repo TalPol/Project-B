@@ -196,10 +196,10 @@ def evaluate_bonito_model(model_path, data_dir, reference, output_dir):
 
 if __name__ == "__main__":
     # Define paths and parameters
-    model_path = "./model_dir/mamba_512"  # Path to Bonito model
+    model_path = "./squigulator/models/bonito_hac_lr_2.5e-4"  # Path to Bonito model
     #model_path = "./bonito/bonito/models/dna_r10.4.1_e8.2_400bps_fast@v4.3.0"
-    data_dir = "./squigulator/test_set/pod5/"  # Directory containing .pod5 files
-    reference = "./squigulator/test_set/fasta/reference.fa"     # Path to reference fasta file
+    data_dir = "./squigulator/dataset/train/pod_files/ATCC_BAA-679__202309/batch_1"  # Directory containing .pod5 files
+    reference = "./squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.fasta"     # Path to reference fasta file
     output_dir = "./squigulator/test_set/results/" # Directory for results
 
     # Evaluate the model
