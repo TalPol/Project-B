@@ -1,0 +1,36 @@
+===== Output for model: bonito_hac_lr_1e-3_128_no_grad_acc =====
+> completed reads: 1711210
+> duration: 5:53:35
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.922590411262723
+> median accuracy: 0.9372108393919365
+> unmapped reads: 167084
+Running command: bonito basecaller ./squigulator/models/batch_size_err/bonito_hac_lr_1e-3_128_no_grad_acc/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_hac_lr_2.5e-4_128_no_grad_acc =====
+> completed reads: 1711210
+> duration: 5:54:23
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.8928974915952613
+> median accuracy: 0.9043478260869565
+> unmapped reads: 194825
+Running command: bonito basecaller ./squigulator/models/batch_size_err/bonito_hac_lr_2.5e-4_128_no_grad_acc/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_hac_lr_5e-4_128_no_grad_acc =====
+> completed reads: 1711210
+> duration: 5:52:03
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.9199789727537458
+> median accuracy: 0.9336842105263158
+> unmapped reads: 168151
+Running command: bonito basecaller ./squigulator/models/batch_size_err/bonito_hac_lr_5e-4_128_no_grad_acc/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+

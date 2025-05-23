@@ -42,30 +42,32 @@ def basecall_with_bonito(model_path, input_dir, output_sam, reference, batchsize
     """
     Perform basecalling using a Bonito-trained model.
     """
-    print("Starting basecalling with Bonito...")
     bonito_command = [
-        "bonito", "basecaller", model_path, input_dir,
+        "bonito", "basecaller", str(model_path), str(input_dir),
         "--device", device,
         "--batchsize", str(batchsize),
-        "--reference", reference,
+        "--reference", str(reference),
+        "--recursive",
     ]
-    start_time = time.time()
+    
+    print("Running command:", " ".join(bonito_command))
+    start_time = time.perf_counter()
     # Redirect output to a SAM file
     with open(output_sam, "w") as sam_file:
         subprocess.run(bonito_command, stdout=sam_file, check=True)
-    duration = time.time() - start_time
-    print(f"Basecalling completed in {duration:.2f} seconds.")
+    duration = time.perf_counter() - start_time
+    #print(f"Basecalling completed in {duration:.2f} seconds.")
     return duration
 
 def main(args):
-    print("* loading data")
     #references = pysam.FastaFile(args.reference)
     #references = parse_fasta(args.reference)
     init(args.seed, args.device)
     output_dir = args.output_dir
     input_dir = args.directory
-    alignment_sam = output_dir / "alignment.sam"
-    alignment_file = output_dir / "alignment_summary.tsv"
+    alignment_sam = output_dir / "basecalls.sam"
+    alignment_file = output_dir / "basecalls_summary.tsv"
+    
     duration = basecall_with_bonito(
         model_path=args.model_directory,
         input_dir=input_dir,
@@ -74,7 +76,6 @@ def main(args):
     )
     #reads = parse_sam(alignment_sam)
     #reads = pysam.AlignmentFile(alignment_sam, "rb")
-
     #seqs = []
     identities = []
     unmapped = 0
@@ -92,11 +93,13 @@ def main(args):
             #print(parts[10])
             #identities.append(1 - identity)
             identities.append(float(parts[-1]))
-
-    print("* mean      %.5f%%" % np.mean(identities))
-    print("* median    %.5f%%" % np.median(identities))
-    print("* time      %.2f" % duration)
-    print("* unmapped  ", unmapped)
+    sys.stderr.write("> mean accuracy: %s\n" % np.mean(identities))
+    sys.stderr.write("> median accuracy: %s\n" % np.median(identities))
+    sys.stderr.write("> unmapped reads: %s\n" % unmapped)
+    # print("* mean       %.5f%%" % np.mean(identities))
+    # print("* median     %.5f%%" % np.median(identities))
+    # print("* unmapped   ", unmapped)
+    
 
 
 def argparser():
@@ -119,7 +122,6 @@ def argparser():
     return parser
 
 if __name__ == "__main__":
-    print("hi")
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 
     subparsers = parser.add_subparsers(

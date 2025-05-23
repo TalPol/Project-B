@@ -2,12 +2,13 @@
 type = "seqdistmodel"
 package = "models.mamba"
 
-[scaling]
-strategy = "pa"
+#remember to not standrdize the models in the toml file it only causes problems
+#[scaling]
+#strategy = "pa"
 
-[standardise]
-mean = 0.0
-stdev = 1.0
+#[standardise]
+#mean = 0.0
+#stdev = 1.0
 
 [run_info]
 sample_type = "dna"

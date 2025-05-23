@@ -1,0 +1,132 @@
+===== Output for model: bonito_fast_lr_1e-3 =====
+> completed reads: 1711210
+> duration: 2:48:13
+> samples per second 6.9E+06
+> done
+> mean accuracy: 0.8573049398893794
+> median accuracy: 0.8619528619528619
+> unmapped reads: 251130
+Running command: bonito basecaller ./squigulator/models/batch_size_64/bonito_fast_lr_1e-3/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_fast_lr_2.5e-4 =====
+> completed reads: 1711210
+> duration: 2:49:13
+> samples per second 6.9E+06
+> done
+> mean accuracy: 0.8193118188251302
+> median accuracy: 0.8205283323250655
+> unmapped reads: 491557
+Running command: bonito basecaller ./squigulator/models/batch_size_64/bonito_fast_lr_2.5e-4/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_fast_lr_5e-4 =====
+> completed reads: 1711210
+> duration: 2:48:29
+> samples per second 6.9E+06
+> done
+> mean accuracy: 0.8365892258883908
+> median accuracy: 0.8400506450051244
+> unmapped reads: 336646
+Running command: bonito basecaller ./squigulator/models/batch_size_64/bonito_fast_lr_5e-4/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_hac_lr_1e-3 =====
+> completed reads: 1711210
+> duration: 5:49:31
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.930680866078395
+> median accuracy: 0.9451219512195121
+> unmapped reads: 164097
+Running command: bonito basecaller ./squigulator/models/batch_size_64/bonito_hac_lr_1e-3/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_hac_lr_2.5e-4 =====
+> completed reads: 1711210
+> duration: 5:47:19
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.908047999950622
+> median accuracy: 0.9221748400852878
+> unmapped reads: 181395
+Running command: bonito basecaller ./squigulator/models/batch_size_64/bonito_hac_lr_2.5e-4/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_hac_lr_5e-4 =====
+> completed reads: 1711210
+> duration: 5:46:54
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.9300944256672357
+> median accuracy: 0.9439421338155516
+> unmapped reads: 162225
+Running command: bonito basecaller ./squigulator/models/batch_size_64/bonito_hac_lr_5e-4/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+
+===== Output for model: mamaba_256_lr_1e-3 =====
+    from bonito.training import Trainer
+  File "/app/bonito/bonito/training.py", line 25, in <module>
+    torch.cuda.set_per_process_memory_fraction(0.5)
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/memory.py", line 135, in set_per_process_memory_fraction
+    _lazy_init()
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/__init__.py", line 298, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+
+
+
+===== Output for model: mamaba_256_lr_2.5e-4 =====
+    from bonito.training import Trainer
+  File "/app/bonito/bonito/training.py", line 25, in <module>
+    torch.cuda.set_per_process_memory_fraction(0.5)
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/memory.py", line 135, in set_per_process_memory_fraction
+    _lazy_init()
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/__init__.py", line 298, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+
+
+
+===== Output for model: mamaba_256_lr_5e-4 =====
+    from bonito.training import Trainer
+  File "/app/bonito/bonito/training.py", line 25, in <module>
+    torch.cuda.set_per_process_memory_fraction(0.5)
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/memory.py", line 135, in set_per_process_memory_fraction
+    _lazy_init()
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/__init__.py", line 298, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+
+
+
+===== Output for model: mamaba_512_lr_2.5e-4 =====
+    from bonito.training import Trainer
+  File "/app/bonito/bonito/training.py", line 25, in <module>
+    torch.cuda.set_per_process_memory_fraction(0.5)
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/memory.py", line 135, in set_per_process_memory_fraction
+    _lazy_init()
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/__init__.py", line 298, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+
+
+
+===== Output for model: mamaba_512_lr_5e-4 =====
+    from bonito.training import Trainer
+  File "/app/bonito/bonito/training.py", line 25, in <module>
+    torch.cuda.set_per_process_memory_fraction(0.5)
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/memory.py", line 135, in set_per_process_memory_fraction
+    _lazy_init()
+  File "/opt/conda/lib/python3.10/site-packages/torch/cuda/__init__.py", line 298, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+
+
+
