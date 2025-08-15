@@ -1,0 +1,122 @@
+[model]
+package = "bonito.crf"
+
+[labels]
+labels = [ "N", "A", "C", "G", "T",]
+
+[input]
+features = 1
+
+[global_norm]
+state_len = 4
+
+#[scaling]
+#strategy = "pa"
+
+[run_info]
+sample_type = "dna"
+sample_rate = 5000
+
+#[standardise]
+#mean = 0.0
+#stdev = 1.0
+
+[qscore]
+scale = 1.05
+bias = 1.3
+
+[encoder]
+type = "serial"
+[[encoder.sublayers]]
+type = "convolution"
+insize = 1
+size = 16
+bias = true
+winlen = 5
+stride = 1
+padding = 2
+activation = "swish"
+norm = "batchnorm"
+
+[[encoder.sublayers]]
+type = "convolution"
+insize = 16
+size = 16
+bias = true
+winlen = 5
+stride = 1
+padding = 2
+activation = "swish"
+norm = "batchnorm"
+
+[[encoder.sublayers]]
+type = "convolution"
+insize = 16
+size = 384
+bias = true
+winlen = 19
+stride = 6
+padding = 9
+activation = "tanh"
+norm = "batchnorm"
+
+[[encoder.sublayers]]
+type = "permute"
+dims = [ 2, 0, 1,]
+
+[[encoder.sublayers]]
+type = "lstm"
+size = 384
+insize = 384
+bias = true
+reverse = 1
+
+[[encoder.sublayers]]
+type = "lstm"
+size = 384
+insize = 384
+bias = true
+reverse = 0
+
+[[encoder.sublayers]]
+type = "lstm"
+size = 384
+insize = 384
+bias = true
+reverse = 1
+
+[[encoder.sublayers]]
+type = "lstm"
+size = 384
+insize = 384
+bias = true
+reverse = 0
+
+[[encoder.sublayers]]
+type = "lstm"
+size = 384
+insize = 384
+bias = true
+reverse = 1
+
+[[encoder.sublayers]]
+type = "linearcrfencoder"
+insize = 384
+n_base = 4
+state_len = 4
+bias = false
+blank_score = 2.0
+
+[[encoder.sublayers]]
+type = "clamp"
+min = -5.0
+max = 5.0
+
+[training_dataset]
+hash = "ac564e79136fdb80e7fb24118f329f14c220baf90aad4fb5197f14f0fa0817bd"
+
+[basecaller]
+batchsize = 128
+chunksize = 5000
+overlap = 100
+

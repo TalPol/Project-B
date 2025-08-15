@@ -1,0 +1,96 @@
+===== Output for model: mamba_512_v4_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:38:23
+> samples per second 5.4E+06
+> done
+> mean accuracy: 0.8706932999597373
+> median accuracy: 0.8793936667691273
+> unmapped reads: 8742
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_64_new/mamba_512_v4_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v4_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:38:22
+> samples per second 5.4E+06
+> done
+> mean accuracy: 0.8730014986220318
+> median accuracy: 0.8818206380353968
+> unmapped reads: 8830
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_64_new/mamba_512_v4_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v6_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:30:18
+> samples per second 6.9E+06
+> done
+> mean accuracy: 0.8697468504960457
+> median accuracy: 0.8785942492012779
+> unmapped reads: 9493
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_64_new/mamba_512_v6_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v6_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:30:20
+> samples per second 6.9E+06
+> done
+> mean accuracy: 0.8787304249469717
+> median accuracy: 0.8884615384615384
+> unmapped reads: 8972
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_64_new/mamba_512_v6_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v7_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:33:48
+> samples per second 6.2E+06
+> done
+> mean accuracy: 0.8784009754302284
+> median accuracy: 0.888
+> unmapped reads: 8758
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_64_new/mamba_512_v7_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v7_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:33:50
+> samples per second 6.2E+06
+> done
+> mean accuracy: 0.8729285543540183
+> median accuracy: 0.8817733990147784
+> unmapped reads: 9249
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_64_new/mamba_512_v7_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v8_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:38:17
+> samples per second 5.5E+06
+> done
+> mean accuracy: 0.8720596713560552
+> median accuracy: 0.8807893677003624
+> unmapped reads: 8683
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_64_new/mamba_512_v8_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v8_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:38:30
+> samples per second 5.4E+06
+> done
+> mean accuracy: 0.8723228643690236
+> median accuracy: 0.8810126582278481
+> unmapped reads: 8830
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_64_new/mamba_512_v8_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+

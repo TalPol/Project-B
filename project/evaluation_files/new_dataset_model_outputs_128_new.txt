@@ -1,0 +1,73 @@
+===== Output for model: mamba_512_v6_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:30:20
+> samples per second 6.9E+06
+> done
+> mean accuracy: 0.8696011098857187
+> median accuracy: 0.8784322279301116
+> unmapped reads: 9570
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_128_new/mamba_512_v6_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v6_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:30:21
+> samples per second 6.9E+06
+> done
+> mean accuracy: 0.8699485231118583
+> median accuracy: 0.8787778146795084
+> unmapped reads: 9633
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_128_new/mamba_512_v6_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v7_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:33:50
+> samples per second 6.2E+06
+> done
+> mean accuracy: 0.8686661926321418
+> median accuracy: 0.8772702528826645
+> unmapped reads: 9593
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_128_new/mamba_512_v7_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v7_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:33:49
+> samples per second 6.2E+06
+> done
+> mean accuracy: 0.8718865638460612
+> median accuracy: 0.8807599029911075
+> unmapped reads: 9341
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_128_new/mamba_512_v7_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamba_512_v8_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:38:18
+> samples per second 5.4E+06
+> done
+> mean accuracy: 0.8706814611669844
+> median accuracy: 0.879222972972973
+> unmapped reads: 8872
+Running command: bonito basecaller ./squigulator/models/new_dataset/redo/mamba_512_v8_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+
+===== Output for model: mamba_512_v8_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:38:23
+> samples per second 5.4E+06
+> done
+> mean accuracy: 0.8814027491515354
+> median accuracy: 0.8910217632612158
+> unmapped reads: 8064
+Running command: bonito basecaller ./squigulator/models/new_dataset/batch_size_128_new/mamba_512_v8_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+

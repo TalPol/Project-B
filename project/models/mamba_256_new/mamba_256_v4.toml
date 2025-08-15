@@ -1,0 +1,149 @@
+[model]
+type = "seqdistmodel"
+package = "models.mamba"
+
+#remember to not standrdize the models in the toml file it only causes problems
+#[scaling]
+#strategy = "pa"
+
+#[standardise]
+#mean = 0.0
+#stdev = 1.0
+
+[run_info]
+sample_type = "dna"
+sample_rate = 5000
+
+[qscore]
+scale = 1.05
+bias = 1.3
+
+[basecaller]
+batchsize = 128
+chunksize = 5000
+overlap = 100
+
+[training]
+command = "train"
+training_directory = "./model_dir/model_optuna_256_3/"
+config = "models/config/mamba_dim_256.toml"
+pretrained = ""
+directory = "PosixPath('squigulator/fast5/training/example_data_dna_r10.4.1_v0')"
+device = "cuda"
+lr = "0.009646947489103195"
+seed = 25
+epochs = 2
+batch = 64
+chunks = 1000000
+valid_chunks = 20000
+no_amp = false
+force = true
+restore_optim = false
+nondeterministic = false
+save_optim_every = 1
+grad_accum_split = 1
+quantile_grad_clip = false
+num_workers = 4
+optuna = false
+func = "<function main at 0x7efec42ab7f0>"
+
+[model.seqdist]
+state_len = 5
+alphabet = [ "N", "A", "C", "G", "T",]
+
+[model.encoder]
+type = "namedserial"
+
+[model.encoder.conv]
+type = "serial"
+[[model.encoder.conv.sublayers]]
+type = "convolution"
+insize = 1
+size = 64
+bias = true
+winlen = 5
+stride = 1
+padding = 2
+activation = "swish"
+norm = "batchnorm"
+
+[[model.encoder.conv.sublayers]]
+type = "convolution"
+insize = 64
+size = 64
+bias = true
+winlen = 5
+stride = 1
+padding = 2
+activation = "swish"
+norm = "batchnorm"
+
+[[model.encoder.conv.sublayers]]
+type = "convolution"
+insize = 64
+size = 128
+bias = true
+winlen = 9
+stride = 3
+padding = 4
+activation = "swish"
+norm = "batchnorm"
+
+[[model.encoder.conv.sublayers]]
+type = "convolution"
+insize = 128
+size = 128
+bias = true
+winlen = 9
+stride = 2
+padding = 4
+activation = "swish"
+norm = "batchnorm"
+
+[[model.encoder.conv.sublayers]]
+type = "convolution"
+insize = 128
+size = 256
+bias = true
+winlen = 5
+stride = 2
+padding = 2
+activation = "swish"
+norm = "batchnorm"
+
+[[model.encoder.conv.sublayers]]
+type = "permute"
+dims = [ 0, 2, 1,]
+
+[model.encoder.transformer_encoder]
+type = "stack"
+depth = 3
+
+[model.encoder.upsample]
+type = "linearupsample"
+d_model = 256
+scale_factor = 2
+
+[model.encoder.crf]
+type = "linearcrfencoder"
+insize = 256
+n_base = 4
+state_len = 5
+bias = false
+scale = 5.0
+blank_score = 2.0
+expand_blanks = true
+permute = [ 1, 0, 2,]
+
+[model.encoder.transformer_encoder.layer]
+type = "mamba2layer"
+d_model = 256
+nhead = 4
+d_state = 320
+headdim = 32
+d_conv = 4
+nlayer = 1
+chunk_size = 256
+dim_feedforward = 1024
+deepnorm_alpha = 2.4494897
+deepnorm_beta = 0.2886751

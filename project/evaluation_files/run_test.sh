@@ -1,11 +1,11 @@
 #!/bin/bash
 
-MODELS_DIR="./squigulator/models/batch_size_64"
+MODELS_DIR="./squigulator/models/new_dataset/redo"
 OUTPUT_DIR="./squigulator/test_set/results"
 DATA_DIR="./squigulator/dataset/train/pod_files/MMC234__202311"
 REFERENCE="./squigulator/dataset/train/fasta/MMC234__202311/reference.mmi"
-LOG_FILE="./evaluation_files/all_model_outputs.txt"
-TMP_LOG=".//evaluation_files/tmp_model_file.txt"
+LOG_FILE="./evaluation_files/new_dataset_model_outputs_redo.txt"
+TMP_LOG="./evaluation_files/tmp_model_file.txt"
 
 # Clear previous log file if it exists
 > "$LOG_FILE"

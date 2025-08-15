@@ -3,16 +3,16 @@ import numpy as np
 import sys
 import gc
 
-OUTDIR = 'squigulator/dataset/train/npy/ATCC_BAA-679__202309/dataset'
+OUTDIR = 'squigulator/dataset/train/npy/dataset'
 DIRS = [
-    'squigulator/dataset/train/npy/ATCC_BAA-679__202309/batch_1',
-    'squigulator/dataset/train/npy/ATCC_BAA-679__202309/batch_2',
-    'squigulator/dataset/train/npy/ATCC_BAA-679__202309/batch_3',
-    'squigulator/dataset/train/npy/ATCC_BAA-679__202309/batch_4',
-    'squigulator/dataset/train/npy/ATCC_BAA-679__202309/batch_5',
-    'squigulator/dataset/train/npy/ATCC_BAA-679__202309/batch_6',
-    'squigulator/dataset/train/npy/ATCC_BAA-679__202309/batch_7',
-    'squigulator/dataset/train/npy/ATCC_BAA-679__202309/batch_8',
+    'squigulator/dataset/train/npy/ATCC_BAA-679__202309_1',
+    'squigulator/dataset/train/npy/ATCC_BAA-679__202309_2',
+    'squigulator/dataset/train/npy/ATCC_BAA-679__202309_3',
+    'squigulator/dataset/train/npy/ATCC_BAA-679__202309_4',
+    'squigulator/dataset/train/npy/ATCC_BAA-679__202309_5',
+    'squigulator/dataset/train/npy/ATCC_BAA-679__202309_6',
+    'squigulator/dataset/train/npy/ATCC_BAA-679__202309_7',
+    'squigulator/dataset/train/npy/ATCC_BAA-679__202309_8',
 ]
 
 LENS = []

@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
+from torch.nn import LayerNorm
 try:
     from flash_attn import flash_attn_qkvpacked_func
     from flash_attn.layers.rotary import RotaryEmbedding
@@ -190,6 +191,421 @@ class MambaLayer(Module):
             raise NotImplementedError
         return self.kwargs
 
+#added embeddings
+@register
+class Mamba2Block(Module):
+    def __init__(self, d_model, nhead, d_state, headdim, d_conv, chunk_size, deepnorm_alpha, rotary_dim=None):
+        super().__init__()
+        assert d_model % nhead == 0, "d_model must be divisible by nhead"
+
+        self.d_model = d_model
+        self.nhead = nhead
+        self.head_dim = d_model // nhead
+        self.deepnorm_alpha = deepnorm_alpha
+        self.rotary_dim = self.head_dim if rotary_dim is None else rotary_dim
+        self.input_proj = torch.nn.Linear(d_model, 3 * d_model, bias=False)
+        self.rotary_emb = RotaryEmbedding(self.rotary_dim, interleaved=False)
+        mamba_cls = partial(Mamba2,
+            d_state=d_state,
+            headdim=headdim,
+            d_conv=d_conv,
+            chunk_size=chunk_size,
+            )
+        mlp_cls = partial(nn.Identity)
+        norm_cls = partial(RMSNorm, eps=1e-5)
+        self.mamba = Block(
+            d_model,
+            mamba_cls,
+            mlp_cls,
+            norm_cls,
+        )
+
+
+    def forward(self, x):
+        """
+        if isinstance(x, tuple):
+            x = torch.cat(x, dim=-1)
+        """
+        """
+        hidden_states, residual = self.mamba(x)
+        residual = (hidden_states + residual) if residual is not None else hidden_states
+        return residual
+        """
+        N, T, _ = x.shape
+        qkv = self.input_proj(x).view(N, T, 3, self.nhead, self.head_dim)
+        qkv_rotary = self.rotary_emb(qkv)
+        
+        # Extract Q component for Mamba input
+        q_rotary = qkv_rotary[:, :, 0, :, :].reshape(N, T, self.d_model)
+        
+        hidden_states, residual = self.mamba(q_rotary)
+        residual = (hidden_states + residual) if residual is not None else hidden_states
+        return residual
+    
+    def reset_parameters(self, gain=1.0):
+        # Recursively initialize parameters
+        for name, module in self.named_modules():
+            if isinstance(module, torch.nn.Linear):
+                torch.nn.init.xavier_normal_(module.weight, gain=gain)
+                if module.bias is not None:
+                    torch.nn.init.zeros_(module.bias)
+            elif isinstance(module, torch.nn.Conv1d):
+                torch.nn.init.kaiming_normal_(module.weight, nonlinearity='relu')
+                if module.bias is not None:
+                    torch.nn.init.zeros_(module.bias)
+            elif isinstance(module, torch.nn.Embedding):
+                torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            elif isinstance(module, RMSNorm):
+                torch.nn.init.ones_(module.weight)
+
+#removed embeddings
+@register
+class Mamba2Blockv2(Module):
+    def __init__(self, d_model, nhead, d_state, headdim, d_conv, chunk_size, deepnorm_alpha, rotary_dim=None):
+        super().__init__()
+        assert d_model % nhead == 0, "d_model must be divisible by nhead"
+
+        self.d_model = d_model
+        self.nhead = nhead
+        self.head_dim = d_model // nhead
+        self.deepnorm_alpha = deepnorm_alpha
+        mamba_cls = partial(Mamba2,
+            d_state=d_state,
+            headdim=headdim,
+            d_conv=d_conv,
+            chunk_size=chunk_size,
+            )
+        mlp_cls = partial(nn.Identity)
+        norm_cls = partial(RMSNorm, eps=1e-5)
+        self.mamba = Block(
+            d_model,
+            mamba_cls,
+            mlp_cls,
+            norm_cls,
+        )
+
+
+    def forward(self, x):
+        """
+        if isinstance(x, tuple):
+            x = torch.cat(x, dim=-1)
+        """
+        
+        hidden_states, residual = self.mamba(x)
+        residual = (hidden_states + residual) if residual is not None else hidden_states
+        return residual
+        
+        
+    
+    def reset_parameters(self, gain=1.0):
+        # Recursively initialize parameters
+        for name, module in self.named_modules():
+            if isinstance(module, torch.nn.Linear):
+                torch.nn.init.xavier_normal_(module.weight, gain=gain)
+                if module.bias is not None:
+                    torch.nn.init.zeros_(module.bias)
+            elif isinstance(module, torch.nn.Conv1d):
+                torch.nn.init.kaiming_normal_(module.weight, nonlinearity='relu')
+                if module.bias is not None:
+                    torch.nn.init.zeros_(module.bias)
+            elif isinstance(module, torch.nn.Embedding):
+                torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            elif isinstance(module, RMSNorm):
+                torch.nn.init.ones_(module.weight)
+# rotary embedding version
+@register
+class MambaLayer2(Module):
+    def __init__(self, d_model, nhead, nlayer, dim_feedforward, deepnorm_alpha, deepnorm_beta,chunk_size, d_state=128, headdim=64, d_conv=4):
+        super().__init__()
+        self.kwargs = {
+            "d_model": d_model,
+            "nhead": nhead,
+            "nlayer": nlayer,
+            "dim_feedforward": dim_feedforward,
+            "deepnorm_alpha": deepnorm_alpha,
+            "deepnorm_beta": deepnorm_beta,
+            "d_state": d_state,
+            "headdim": headdim,
+            "d_conv": d_conv,
+        }
+        # self.self_attn = MultiHeadAttention(d_model=d_model, nhead=nhead)
+        # maybe switch to nn.embedding?
+        # added an MHA
+        
+        self.mamba = nn.ModuleList(
+            [
+                Mamba2Block(
+                    d_model=d_model,
+                    nhead=nhead,
+                    d_state=d_state,
+                    headdim=headdim,
+                    d_conv=d_conv,
+                    chunk_size=chunk_size,
+                    deepnorm_alpha=deepnorm_alpha,
+                    #out_bias=True,            
+                )
+            for i in range(nlayer)
+            ]
+        )
+        self.ff = GatedMlp(
+            d_model,
+            hidden_features=dim_feedforward,
+            activation=F.silu,
+            bias1=False,
+            bias2=False,
+            multiple_of=1,
+        )
+        
+        self.norm = RMSNorm(d_model)
+
+        self.register_buffer("deepnorm_alpha", torch.tensor(deepnorm_alpha))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        db = self.kwargs["deepnorm_beta"]
+        d_model = self.kwargs["d_model"]
+        torch.nn.init.xavier_normal_(self.ff.fc1.weight, gain=db)
+        torch.nn.init.xavier_normal_(self.ff.fc2.weight, gain=db)
+        for layer in self.mamba:
+            if hasattr(layer, "reset_parameters"):
+                layer.reset_parameters(gain=db)
+
+
+    def forward(self, x):
+        #print("\n \n \n \n", x.shape)
+        # x = self.self_attn(x)
+        #print("\n \n \n \n", x.shape)
+        #x = self.norm1(self.mamba(x), self.deepnorm_alpha*x)
+        for layer in self.mamba:
+            x = layer(x)
+
+        x = self.norm(self.ff(x))
+        return x
+
+    def to_dict(self, include_weights=False):
+        if include_weights:
+            raise NotImplementedError
+        return self.kwargs
+
+
+
+# no embedding version
+@register
+class Mamba2Layer(Module):
+    def __init__(self, d_model, nhead, nlayer, dim_feedforward, deepnorm_alpha, deepnorm_beta,chunk_size, d_state=128, headdim=64, d_conv=4):
+        super().__init__()
+        self.kwargs = {
+            "d_model": d_model,
+            "nhead": nhead,
+            "nlayer": nlayer,
+            "dim_feedforward": dim_feedforward,
+            "deepnorm_alpha": deepnorm_alpha,
+            "deepnorm_beta": deepnorm_beta,
+            "d_state": d_state,
+            "headdim": headdim,
+            "d_conv": d_conv,
+        }
+        # self.self_attn = MultiHeadAttention(d_model=d_model, nhead=nhead)
+        # maybe switch to nn.embedding?
+        # added an MHA
+        
+        self.mamba = nn.ModuleList(
+            [
+                Mamba2Blockv2(
+                    d_model=d_model,
+                    nhead=nhead,
+                    d_state=d_state,
+                    headdim=headdim,
+                    d_conv=d_conv,
+                    chunk_size=chunk_size,
+                    deepnorm_alpha=deepnorm_alpha,
+                    #out_bias=True,            
+                )
+            for i in range(nlayer)
+            ]
+        )
+        self.ff = GatedMlp(
+            d_model,
+            hidden_features=dim_feedforward,
+            activation=F.silu,
+            bias1=False,
+            bias2=False,
+            multiple_of=1,
+        )
+        
+        self.norm = RMSNorm(d_model)
+
+        self.register_buffer("deepnorm_alpha", torch.tensor(deepnorm_alpha))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        db = self.kwargs["deepnorm_beta"]
+        d_model = self.kwargs["d_model"]
+        torch.nn.init.xavier_normal_(self.ff.fc1.weight, gain=db)
+        torch.nn.init.xavier_normal_(self.ff.fc2.weight, gain=db)
+        for layer in self.mamba:
+            if hasattr(layer, "reset_parameters"):
+                layer.reset_parameters(gain=db)
+
+
+    def forward(self, x):
+        #print("\n \n \n \n", x.shape)
+        # x = self.self_attn(x)
+        #print("\n \n \n \n", x.shape)
+        #x = self.norm1(self.mamba(x), self.deepnorm_alpha*x)
+        for layer in self.mamba:
+            x = layer(x)
+
+        x = self.norm(self.ff(x))
+        return x
+
+    def to_dict(self, include_weights=False):
+        if include_weights:
+            raise NotImplementedError
+        return self.kwargs
+    
+#added embeddings and GatedMlp
+@register
+class Mamba2Blockv3(Module):
+    def __init__(self, d_model, nhead, d_state, headdim, d_conv, chunk_size, deepnorm_alpha, dim_feedforward, rotary_dim=None):
+        super().__init__()
+        assert d_model % nhead == 0, "d_model must be divisible by nhead"
+
+        self.d_model = d_model
+        self.nhead = nhead
+        self.head_dim = d_model // nhead
+        self.deepnorm_alpha = deepnorm_alpha
+        self.rotary_dim = self.head_dim if rotary_dim is None else rotary_dim
+        self.input_proj = torch.nn.Linear(d_model, 3 * d_model, bias=False)
+        self.rotary_emb = RotaryEmbedding(self.rotary_dim, interleaved=False)
+        mamba_cls = partial(Mamba2,
+            d_state=d_state,
+            headdim=headdim,
+            d_conv=d_conv,
+            chunk_size=chunk_size,
+            )
+        mlp_cls = partial(nn.Identity)
+        norm_cls = partial(RMSNorm, eps=1e-5)
+        self.mamba = Block(
+            d_model,
+            mamba_cls,
+            mlp_cls,
+            norm_cls,
+        )
+        self.ff = GatedMlp(
+            d_model,
+            hidden_features=dim_feedforward,
+            activation=F.silu,
+            bias1=False,
+            bias2=False,
+            multiple_of=1,
+        )
+        self.norm = RMSNorm(d_model)
+
+
+    def forward(self, x):
+        """
+        if isinstance(x, tuple):
+            x = torch.cat(x, dim=-1)
+        """
+        """
+        hidden_states, residual = self.mamba(x)
+        residual = (hidden_states + residual) if residual is not None else hidden_states
+        return residual
+        """
+        N, T, _ = x.shape
+        qkv = self.input_proj(x).view(N, T, 3, self.nhead, self.head_dim)
+        qkv_rotary = self.rotary_emb(qkv)
+        
+        # Extract Q component for Mamba input
+        q_rotary = qkv_rotary[:, :, 0, :, :].reshape(N, T, self.d_model)
+        
+        hidden_states, residual = self.mamba(q_rotary)
+        residual = (hidden_states + residual) if residual is not None else hidden_states
+        residual = self.norm(self.ff(residual))
+        return residual
+    
+    def reset_parameters(self, gain=1.0):
+        # Recursively initialize parameters
+        for name, module in self.named_modules():
+            if isinstance(module, torch.nn.Linear):
+                torch.nn.init.xavier_normal_(module.weight, gain=gain)
+                if module.bias is not None:
+                    torch.nn.init.zeros_(module.bias)
+            elif isinstance(module, torch.nn.Conv1d):
+                torch.nn.init.kaiming_normal_(module.weight, nonlinearity='relu')
+                if module.bias is not None:
+                    torch.nn.init.zeros_(module.bias)
+            elif isinstance(module, torch.nn.Embedding):
+                torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            elif isinstance(module, RMSNorm):
+                torch.nn.init.ones_(module.weight)
+        torch.nn.init.xavier_normal_(self.ff.fc1.weight, gain=gain)
+        torch.nn.init.xavier_normal_(self.ff.fc2.weight, gain=gain)
+
+# rotary embedding version
+@register
+class MambaLayer2v3(Module):
+    def __init__(self, d_model, nhead, nlayer, dim_feedforward, deepnorm_alpha, deepnorm_beta,chunk_size, d_state=128, headdim=64, d_conv=4):
+        super().__init__()
+        self.kwargs = {
+            "d_model": d_model,
+            "nhead": nhead,
+            "nlayer": nlayer,
+            "dim_feedforward": dim_feedforward,
+            "deepnorm_alpha": deepnorm_alpha,
+            "deepnorm_beta": deepnorm_beta,
+            "d_state": d_state,
+            "headdim": headdim,
+            "d_conv": d_conv,
+        }
+        # self.self_attn = MultiHeadAttention(d_model=d_model, nhead=nhead)
+        # maybe switch to nn.embedding?
+        # added an MHA
+        
+        self.mamba = nn.ModuleList(
+            [
+                Mamba2Blockv3(
+                    d_model=d_model,
+                    nhead=nhead,
+                    d_state=d_state,
+                    headdim=headdim,
+                    d_conv=d_conv,
+                    chunk_size=chunk_size,
+                    dim_feedforward=dim_feedforward,
+                    deepnorm_alpha=deepnorm_alpha,
+                    #out_bias=True,            
+                )
+            for i in range(nlayer)
+            ]
+        )
+        
+        self.register_buffer("deepnorm_alpha", torch.tensor(deepnorm_alpha))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        db = self.kwargs["deepnorm_beta"]
+        d_model = self.kwargs["d_model"]
+        
+        for layer in self.mamba:
+            if hasattr(layer, "reset_parameters"):
+                layer.reset_parameters(gain=db)
+
+
+    def forward(self, x):
+        #print("\n \n \n \n", x.shape)
+        # x = self.self_attn(x)
+        #print("\n \n \n \n", x.shape)
+        #x = self.norm1(self.mamba(x), self.deepnorm_alpha*x)
+        for layer in self.mamba:
+            x = layer(x)
+        
+        return x
+
+    def to_dict(self, include_weights=False):
+        if include_weights:
+            raise NotImplementedError
+        return self.kwargs
 
 def use_koi(self, **kwargs):
     # koi needs modified LinearCRFLayer settings
@@ -202,6 +618,7 @@ def use_koi(self, **kwargs):
         Permute([1, 0, 2]),
         MakeContiguous(),
     ])
+
 
 
 def Model(config):

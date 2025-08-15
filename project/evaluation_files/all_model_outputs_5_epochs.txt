@@ -1,0 +1,12 @@
+===== Output for model: mamaba_512_batch_256_lr_1e-3 =====
+> completed reads: 1711210
+> duration: 2:44:20
+> samples per second 7.0E+06
+> done
+> mean accuracy: 0.9540367232836942
+> median accuracy: 0.9700413223140496
+> unmapped reads: 136809
+Running command: bonito basecaller ./squigulator/models/batch_size_err/mamaba_512_batch_256_lr_1e-3/ squigulator/dataset/train/pod_files/ATCC_BAA-679__202309 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/ATCC_BAA-679__202309/reference.mmi --recursive
+
+
+

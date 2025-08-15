@@ -1,0 +1,12 @@
+===== Output for model: mamba_512_v8_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:38:18
+> samples per second 5.4E+06
+> done
+> mean accuracy: 0.8706814611669844
+> median accuracy: 0.879222972972973
+> unmapped reads: 8872
+Running command: bonito basecaller ./squigulator/models/new_dataset/redo/mamba_512_v8_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+

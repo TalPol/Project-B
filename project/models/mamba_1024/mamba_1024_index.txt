@@ -1,0 +1,60 @@
+mamba_1024_v1:
+[model.encoder.transformer_encoder.layer]
+type = "mamba2layer"
+d_model = 1024
+nhead = 8
+d_state = 64
+headdim = 64
+d_conv = 4
+nlayer = 1
+chunk_size = 512
+dim_feedforward = 2048
+deepnorm_alpha = 2.4494897
+deepnorm_beta = 0.2886751
+
+-----------------------
+mamba_1024_v2:
+[model.encoder.transformer_encoder.layer]
+type = "mamba2layer"
+d_model = 1024
+nhead = 4
+d_state = 64
+headdim = 64
+d_conv = 4
+nlayer = 1
+chunk_size = 512
+dim_feedforward = 2048
+deepnorm_alpha = 2.4494897
+deepnorm_beta = 0.2886751
+
+
+
+-----------------------
+mamba_1024_v3:
+[model.encoder.transformer_encoder.layer]
+type = "mamba2layer"
+d_model = 1024
+nhead = 8
+d_state = 32
+headdim = 64
+d_conv = 4
+nlayer = 1
+chunk_size = 512
+dim_feedforward = 2048
+deepnorm_alpha = 2.4494897
+deepnorm_beta = 0.2886751
+
+-----------------------
+mamba_1024_v4:
+[model.encoder.transformer_encoder.layer]
+type = "mamba2layer"
+d_model = 1024
+nhead = 4
+d_state = 32
+headdim = 64
+d_conv = 4
+nlayer = 1
+chunk_size = 512
+dim_feedforward = 2048
+deepnorm_alpha = 2.4494897
+deepnorm_beta = 0.2886751

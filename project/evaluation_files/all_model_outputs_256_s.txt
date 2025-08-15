@@ -1,0 +1,144 @@
+===== Output for model: bonito_fast_lr_1e-3 =====
+> completed reads: 236014
+> duration: 0:29:59
+> samples per second 7.0E+06
+> done
+> mean accuracy: 0.8491871730855113
+> median accuracy: 0.8533791523482245
+> unmapped reads: 15615
+Running command: bonito basecaller ./squigulator/models/batch_size_256/bonito_fast_lr_1e-3/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_fast_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:30:25
+> samples per second 6.9E+06
+> done
+> mean accuracy: 0.7904351378433232
+> median accuracy: 0.787586405529954
+> unmapped reads: 72265
+Running command: bonito basecaller ./squigulator/models/batch_size_256/bonito_fast_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_fast_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:30:10
+> samples per second 7.0E+06
+> done
+> mean accuracy: 0.8181931485300181
+> median accuracy: 0.8183333333333334
+> unmapped reads: 29853
+Running command: bonito basecaller ./squigulator/models/batch_size_256/bonito_fast_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_hac_lr_1e-3 =====
+> completed reads: 236014
+> duration: 1:02:51
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.9245430127071783
+> median accuracy: 0.9390519187358917
+> unmapped reads: 7750
+Running command: bonito basecaller ./squigulator/models/batch_size_256/bonito_hac_lr_1e-3/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_hac_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 1:03:06
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.9031506503327067
+> median accuracy: 0.9146760790365284
+> unmapped reads: 8854
+Running command: bonito basecaller ./squigulator/models/batch_size_256/bonito_hac_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: bonito_hac_lr_5e-4 =====
+> completed reads: 236014
+> duration: 1:03:06
+> samples per second 3.3E+06
+> done
+> mean accuracy: 0.9070845718800091
+> median accuracy: 0.9199514243011591
+> unmapped reads: 8828
+Running command: bonito basecaller ./squigulator/models/batch_size_256/bonito_hac_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamaba_256_lr_1e-3 =====
+> completed reads: 236014
+> duration: 0:26:38
+> samples per second 7.9E+06
+> done
+> mean accuracy: 0.8397853035537023
+> median accuracy: 0.8442906574394463
+> unmapped reads: 16948
+Running command: bonito basecaller ./squigulator/models/batch_size_256/mamaba_256_lr_1e-3/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamaba_256_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:26:38
+> samples per second 7.9E+06
+> done
+> mean accuracy: 0.8296371275683646
+> median accuracy: 0.8329466357308585
+> unmapped reads: 19851
+Running command: bonito basecaller ./squigulator/models/batch_size_256/mamaba_256_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamaba_256_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:26:40
+> samples per second 7.9E+06
+> done
+> mean accuracy: 0.840093545407023
+> median accuracy: 0.8451827242524917
+> unmapped reads: 17206
+Running command: bonito basecaller ./squigulator/models/batch_size_256/mamaba_256_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamaba_512_lr_1e-3 =====
+> completed reads: 236014
+> duration: 0:29:58
+> samples per second 7.0E+06
+> done
+> mean accuracy: 0.8538272445401849
+> median accuracy: 0.8617977528089887
+> unmapped reads: 10740
+Running command: bonito basecaller ./squigulator/models/batch_size_256/mamaba_512_lr_1e-3/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamaba_512_lr_2.5e-4 =====
+> completed reads: 236014
+> duration: 0:29:54
+> samples per second 7.0E+06
+> done
+> mean accuracy: 0.8358440843269114
+> median accuracy: 0.8412233144466583
+> unmapped reads: 10712
+Running command: bonito basecaller ./squigulator/models/batch_size_256/mamaba_512_lr_2.5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
+===== Output for model: mamaba_512_lr_5e-4 =====
+> completed reads: 236014
+> duration: 0:29:55
+> samples per second 7.0E+06
+> done
+> mean accuracy: 0.8397635433293206
+> median accuracy: 0.8461538461538461
+> unmapped reads: 12617
+Running command: bonito basecaller ./squigulator/models/batch_size_256/mamaba_512_lr_5e-4/ squigulator/dataset/train/pod_files/MMC234__202311 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/MMC234__202311/reference.mmi --recursive
+
+
+
