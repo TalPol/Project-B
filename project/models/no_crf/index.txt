@@ -1,0 +1,7 @@
+mamba_512_v9.toml = mamba_512_v4_no_crf
+mamba_512_v10.toml = mamba_512_v6_no_crf
+mamba_512_v11.toml = mamba_512_v7_no_crf
+mamba_512_v12.toml = mamba_512_v8_no_crf
+
+
+so this wasn't a good idea as you need a crf encoder in order to use crf loss.

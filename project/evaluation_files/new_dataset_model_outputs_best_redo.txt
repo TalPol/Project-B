@@ -1,0 +1,24 @@
+===== Output for model: mamba_256_best_hyperparameters_lr_5e-4 =====
+    args.func(args)
+  File "/app/./evaluation_files/get_median_identity.py", line 71, in main
+    duration = basecall_with_bonito(
+  File "/app/./evaluation_files/get_median_identity.py", line 57, in basecall_with_bonito
+    subprocess.run(bonito_command, stdout=sam_file, check=True)
+  File "/opt/conda/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['bonito', 'basecaller', './squigulator/models/new_dataset/redo/mamba_256_best_hyperparameters_lr_5e-4/', 'squigulator/dataset/train/pod_files/Klebsiella_pneumoniae_AJ292', '--device', 'cuda', '--batchsize', '16', '--reference', 'squigulator/dataset/train/fasta/AJ292__202310/reference.fa', '--recursive']' died with <Signals.SIGSEGV: 11>.
+
+
+
+===== Output for model: mamba_512_new_v2_lr_2.5e-4(v4) =====
+> completed reads: 71694
+> duration: 0:28:54
+> samples per second 4.1E+06
+> done
+> mean accuracy: 0.8207851790373647
+> median accuracy: 0.8209030973774825
+> unmapped reads: 19206
+Running command: bonito basecaller ./squigulator/models/new_dataset/redo/mamba_512_new_v2_lr_2.5e-4(v4)/ squigulator/dataset/train/pod_files/Klebsiella_pneumoniae_AJ292 --device cuda --batchsize 16 --reference squigulator/dataset/train/fasta/AJ292__202310/reference.fa --recursive
+
+
+

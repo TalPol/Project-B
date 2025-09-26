@@ -1,0 +1,12 @@
+===== Output for model: bonito_fast_lr_5e-4 =====
+    args.func(args)
+  File "/app/./evaluation_files/get_median_identity.py", line 71, in main
+    duration = basecall_with_bonito(
+  File "/app/./evaluation_files/get_median_identity.py", line 57, in basecall_with_bonito
+    subprocess.run(bonito_command, stdout=sam_file, check=True)
+  File "/opt/conda/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['bonito', 'basecaller', './squigulator/models/redo/bonito_fast_lr_5e-4/', 'squigulator/dataset/train/pod_files/Staphylococcus_aureus_BPH2947', '--device', 'cuda', '--batchsize', '32', '--reference', 'squigulator/dataset/train/fasta/BPH2947__202310/reference.fa', '--recursive']' died with <Signals.SIGSEGV: 11>.
+
+
+

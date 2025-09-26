@@ -1,0 +1,48 @@
+===== Output for model: bonito_fast_lr_5e-4 =====
+> completed reads: 162292
+> duration: 0:39:19
+> samples per second 3.6E+06
+> done
+> mean accuracy: 0.8411726019702368
+> median accuracy: 0.8448233169599166
+> unmapped reads: 69630
+Running command: bonito basecaller ./squigulator/models/best/bonito_fast_lr_5e-4/ squigulator/dataset/train/pod_files/Staphylococcus_aureus_BPH2947 --device cuda --batchsize 16 --reference squigulator/dataset/train/fasta/BPH2947__202310/reference.fa --recursive
+
+
+
+===== Output for model: bonito_hac_lr_5e-4 =====
+> completed reads: 162292
+> duration: 1:18:29
+> samples per second 1.8E+06
+> done
+> mean accuracy: 0.9138900957438298
+> median accuracy: 0.9246855933706213
+> unmapped reads: 14508
+Running command: bonito basecaller ./squigulator/models/best/bonito_hac_lr_5e-4/ squigulator/dataset/train/pod_files/Staphylococcus_aureus_BPH2947 --device cuda --batchsize 16 --reference squigulator/dataset/train/fasta/BPH2947__202310/reference.fa --recursive
+
+
+
+===== Output for model: mamba_256_best_hyperparameters_lr_5e-4 =====
+> completed reads: 162292
+> duration: 0:27:23
+> samples per second 5.2E+06
+> done
+> mean accuracy: 0.8547526514588936
+> median accuracy: 0.8569762853112275
+> unmapped reads: 31936
+Running command: bonito basecaller ./squigulator/models/best/mamba_256_best_hyperparameters_lr_5e-4/ squigulator/dataset/train/pod_files/Staphylococcus_aureus_BPH2947 --device cuda --batchsize 16 --reference squigulator/dataset/train/fasta/BPH2947__202310/reference.fa --recursive
+
+
+
+===== Output for model: mamba_512_new_v2_lr_2.5e-4(v4) =====
+> completed reads: 162292
+> duration: 0:34:35
+> samples per second 4.1E+06
+> done
+> mean accuracy: 0.9099757583651782
+> median accuracy: 0.9146608315098468
+> unmapped reads: 8546
+Running command: bonito basecaller ./squigulator/models/best/mamba_512_new_v2_lr_2.5e-4(v4)/ squigulator/dataset/train/pod_files/Staphylococcus_aureus_BPH2947 --device cuda --batchsize 16 --reference squigulator/dataset/train/fasta/BPH2947__202310/reference.fa --recursive
+
+
+

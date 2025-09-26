@@ -78,12 +78,14 @@ def main(args):
     #reads = pysam.AlignmentFile(alignment_sam, "rb")
     #seqs = []
     identities = []
+    identities_with_unmapped = []
     unmapped = 0
     with open(alignment_file, 'rt') as data_file:
         for line in data_file:
             parts = line.strip().split()
             if parts[0] == 'filename' or parts[0] == '-':
                 continue
+            identities_with_unmapped.append(float(parts[-1]))
             if float(parts[-1]) == 0.0:
                 unmapped += 1
                 continue
@@ -96,6 +98,8 @@ def main(args):
     sys.stderr.write("> mean accuracy: %s\n" % np.mean(identities))
     sys.stderr.write("> median accuracy: %s\n" % np.median(identities))
     sys.stderr.write("> unmapped reads: %s\n" % unmapped)
+    sys.stderr.write("> mean accuracy with unmapped reads: %s\n" % np.mean(identities_with_unmapped))
+    sys.stderr.write("> median accuracy with unmapped reads: %s\n" % np.median(identities_with_unmapped))
     # print("* mean       %.5f%%" % np.mean(identities))
     # print("* median     %.5f%%" % np.median(identities))
     # print("* unmapped   ", unmapped)

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-MODELS_DIR="./squigulator/models/new_dataset/redo"
+MODELS_DIR="./squigulator/models/redo"
 OUTPUT_DIR="./squigulator/test_set/results"
-DATA_DIR="./squigulator/dataset/train/pod_files/MMC234__202311"
-REFERENCE="./squigulator/dataset/train/fasta/MMC234__202311/reference.mmi"
-LOG_FILE="./evaluation_files/new_dataset_model_outputs_redo.txt"
+DATA_DIR="./squigulator/dataset/train/pod_files/Staphylococcus_aureus_BPH2947"
+REFERENCE="./squigulator/dataset/train/fasta/BPH2947__202310/reference.mmi"
+LOG_FILE="./evaluation_files/redo_Staphylococcus_aureus_BPH2947_with_unmapped_mmi.txt"
 TMP_LOG="./evaluation_files/tmp_model_file.txt"
 
 # Clear previous log file if it exists
@@ -23,7 +23,7 @@ for model_dir in "$MODELS_DIR"/*/; do
         > "$TMP_LOG" 2>&1
 
     # Append only the last 10 lines (or more if needed) to the final log
-    tail -n 8 "$TMP_LOG" >> "$LOG_FILE"
+    tail -n 10 "$TMP_LOG" >> "$LOG_FILE"
     echo -e "\n" >> "$LOG_FILE"
 
     echo "" >> "$LOG_FILE"

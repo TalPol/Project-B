@@ -1,0 +1,14 @@
+===== Output for model: mamba_512_new_lr_5e-4_128 =====
+> completed reads: 162292
+> duration: 0:22:28
+> samples per second 6.2E+06
+> done
+> mean accuracy: 0.9050916883358272
+> median accuracy: 0.9094935587869983
+> unmapped reads: 7210
+> mean accuracy with unmapped reads: 0.864881997945042
+> median accuracy with unmapped reads: 0.9083665338645418
+Running command: bonito basecaller ./squigulator/models/redo/mamba_512_new_lr_5e-4_128/ squigulator/dataset/train/pod_files/Staphylococcus_aureus_BPH2947 --device cuda --batchsize 32 --reference squigulator/dataset/train/fasta/BPH2947__202310/reference.mmi --recursive
+
+
+
